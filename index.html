@@ -182,58 +182,6 @@
             border-radius: 15px;
         }
         
-        .domain-guide {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-top: 40px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-        }
-        
-        .domain-guide h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .step {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            border-left: 4px solid #3498db;
-        }
-        
-        .step-number {
-            display: inline-block;
-            width: 30px;
-            height: 30px;
-            background: #3498db;
-            color: white;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 30px;
-            margin-right: 10px;
-            font-weight: bold;
-        }
-        
-        .step h3 {
-            display: inline;
-            color: #2c3e50;
-        }
-        
-        .step p {
-            margin-top: 10px;
-            color: #7f8c8d;
-        }
-        
         @media (max-width: 768px) {
             .categories {
                 grid-template-columns: 1fr;
@@ -241,10 +189,6 @@
             
             h1 {
                 font-size: 2.2rem;
-            }
-            
-            .steps {
-                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -385,37 +329,6 @@
                         </a>
                     </li>
                 </ul>
-            </div>
-        </div>
-        
-        <div class="domain-guide">
-            <h2>如何将此页面与您的域名绑定</h2>
-            <p>完成此导航页面后，您可以通过以下步骤将其与您的域名绑定：</p>
-            
-            <div class="steps">
-                <div class="step">
-                    <span class="step-number">1</span>
-                    <h3>选择托管平台</h3>
-                    <p>将HTML文件上传到静态网站托管服务，如GitHub Pages、Netlify或Vercel。</p>
-                </div>
-                
-                <div class="step">
-                    <span class="step-number">2</span>
-                    <h3>配置DNS记录</h3>
-                    <p>在您的域名注册商处，添加指向托管平台的CNAME或A记录。</p>
-                </div>
-                
-                <div class="step">
-                    <span class="step-number">3</span>
-                    <h3>等待生效</h3>
-                    <p>DNS更改可能需要几小时到48小时才能在全球生效。</p>
-                </div>
-                
-                <div class="step">
-                    <span class="step-number">4</span>
-                    <h3>测试访问</h3>
-                    <p>使用您的域名测试网站是否正常访问。</p>
-                </div>
             </div>
         </div>
         
