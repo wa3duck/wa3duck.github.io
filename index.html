@@ -33,6 +33,7 @@
             background: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
         
         h1 {
@@ -47,6 +48,53 @@
             font-size: 1.2rem;
             max-width: 600px;
             margin: 0 auto;
+        }
+        
+        .edit-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #27ae60;
         }
         
         .categories {
@@ -125,6 +173,8 @@
         
         .links li {
             margin-bottom: 12px;
+            display: flex;
+            align-items: center;
         }
         
         .links a {
@@ -137,6 +187,7 @@
             color: #34495e;
             transition: all 0.3s;
             border-left: 4px solid transparent;
+            flex: 1;
         }
         
         .links a:hover {
@@ -173,6 +224,60 @@
             color: #7f8c8d;
         }
         
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .links li:hover .delete-btn {
+            opacity: 1;
+        }
+        
+        .add-link-form {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+            display: none;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
         @media (max-width: 768px) {
             .categories {
                 grid-template-columns: 1fr;
@@ -180,6 +285,12 @@
             
             h1 {
                 font-size: 2.2rem;
+            }
+            
+            .edit-controls {
+                position: static;
+                justify-content: center;
+                margin-top: 20px;
             }
         }
     </style>
@@ -189,203 +300,303 @@
         <header>
             <h1>实用资源导航</h1>
             <p class="description">精心挑选的实用网站与工具，提高工作效率与生活质量</p>
+            <div class="edit-controls">
+                <button id="toggleEdit" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> 编辑模式
+                </button>
+                <button id="addLink" class="btn btn-success" style="display: none;">
+                    <i class="fas fa-plus"></i> 添加链接
+                </button>
+                <button id="resetData" class="btn btn-danger" style="display: none;">
+                    <i class="fas fa-redo"></i> 重置数据
+                </button>
+            </div>
         </header>
+        
+        <div id="addLinkForm" class="add-link-form">
+            <h3>添加新链接</h3>
+            <form id="linkForm">
+                <div class="form-group">
+                    <label for="category">分类</label>
+                    <select id="category" class="form-control" required>
+                        <option value="tools">工具</option>
+                        <option value="ai">AI</option>
+                        <option value="video">视频</option>
+                        <option value="games">游戏</option>
+                        <option value="proxy">代理</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="title">标题</label>
+                    <input type="text" id="title" class="form-control" placeholder="例如: GitHub" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">描述</label>
+                    <input type="text" id="description" class="form-control" placeholder="例如: 全球最大的代码托管平台" required>
+                </div>
+                <div class="form-group">
+                    <label for="url">URL</label>
+                    <input type="url" id="url" class="form-control" placeholder="例如: https://github.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="icon">图标类名</label>
+                    <input type="text" id="icon" class="form-control" placeholder="例如: fab fa-github" required>
+                    <small>请使用Font Awesome图标类名，例如: fab fa-github, fas fa-tools</small>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancelAdd" class="btn btn-danger">取消</button>
+                    <button type="submit" class="btn btn-success">添加</button>
+                </div>
+            </form>
+        </div>
         
         <div class="categories">
             <!-- 工具分类 -->
-            <div class="category tools">
+            <div class="category tools" data-category="tools">
                 <div class="category-title">
                     <div class="category-icon"><i class="fas fa-tools"></i></div>
                     <h2>工具</h2>
                 </div>
-                <ul class="links">
-                    <li>
-                        <a href="https://github.com/dashboard" target="_blank">
-                            <div class="link-icon"><i class="fab fa-github"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">GitHub</div>
-                                <div class="link-desc">全球最大的代码托管平台</div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://moemail.app/zh-CN/moe" target="_blank">
-                            <div class="link-icon"><i class="fas fa-envelope"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">MoeMail邮箱</div>
-                                <div class="link-desc">简洁美观的在线邮箱服务</div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://haowallpaper.com/wallpaperForum" target="_blank">
-                            <div class="link-icon"><i class="fas fa-image"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">4K高清壁纸</div>
-                                <div class="link-desc">海量免费4K高清壁纸资源</div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://www.678cv.com" target="_blank">
-                            <div class="link-icon"><i class="fas fa-hands-helping"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">678辅助网</div>
-                                <div class="link-desc">实用的辅助工具与资源</div>
-                            </div>
-                        </a>
-                    </li>
+                <ul class="links" id="tools-links">
+                    <!-- 链接将通过JavaScript动态加载 -->
                 </ul>
             </div>
             
             <!-- AI分类 -->
-            <div class="category ai">
+            <div class="category ai" data-category="ai">
                 <div class="category-title">
                     <div class="category-icon"><i class="fas fa-robot"></i></div>
                     <h2>AI</h2>
                 </div>
-                <ul class="links">
-                    <li>
-                        <a href="https://chat.deepseek.com" target="_blank">
-                            <div class="link-icon"><i class="fas fa-brain"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">DeepSeek</div>
-                                <div class="link-desc">强大的AI对话助手</div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://www.doubao.com/chat/" target="_blank">
-                            <div class="link-icon"><i class="fas fa-bolt"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">豆包</div>
-                                <div class="link-desc">字节跳动推出的AI助手</div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://grok.com" target="_blank">
-                            <div class="link-icon"><i class="fas fa-bolt-lightning"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">Grok</div>
-                                <div class="link-desc">xAI开发的AI聊天机器人</div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://chatgpt.com" target="_blank">
-                            <div class="link-icon"><i class="fas fa-comment-dots"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">ChatGPT</div>
-                                <div class="link-desc">OpenAI开发的AI对话模型</div>
-                            </div>
-                        </a>
-                    </li>
+                <ul class="links" id="ai-links">
+                    <!-- 链接将通过JavaScript动态加载 -->
                 </ul>
             </div>
             
             <!-- 视频分类 -->
-            <div class="category video">
+            <div class="category video" data-category="video">
                 <div class="category-title">
                     <div class="category-icon"><i class="fas fa-video"></i></div>
                     <h2>视频</h2>
                 </div>
-                <ul class="links">
-                    <li>
-                        <a href="https://skr.skrcc.cc:666/?ref=www.zjnav.com" target="_blank">
-                            <div class="link-icon"><i class="fas fa-film"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">樱之空</div>
-                                <div class="link-desc">优质的在线视频观看平台</div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://www.gugufans.cc" target="_blank">
-                            <div class="link-icon"><i class="fas fa-play-circle"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">咕咕番</div>
-                                <div class="link-desc">丰富的动漫与影视资源</div>
-                            </div>
-                        </a>
-                    </li>
+                <ul class="links" id="video-links">
+                    <!-- 链接将通过JavaScript动态加载 -->
                 </ul>
             </div>
             
             <!-- 游戏分类 -->
-            <div class="category games">
+            <div class="category games" data-category="games">
                 <div class="category-title">
                     <div class="category-icon"><i class="fas fa-gamepad"></i></div>
                     <h2>游戏</h2>
                 </div>
-                <ul class="links">
-                    <li>
-                        <a href="https://www.gamer520.com" target="_blank">
-                            <div class="link-icon"><i class="fas fa-dice"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">Switch520</div>
-                                <div class="link-desc">Switch游戏资源分享平台</div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://koyso.com" target="_blank">
-                            <div class="link-icon"><i class="fas fa-joystick"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">科伊索</div>
-                                <div class="link-desc">游戏资源与社区平台</div>
-                            </div>
-                        </a>
-                    </li>
+                <ul class="links" id="games-links">
+                    <!-- 链接将通过JavaScript动态加载 -->
                 </ul>
             </div>
             
             <!-- 代理分类 -->
-            <div class="category proxy">
+            <div class="category proxy" data-category="proxy">
                 <div class="category-title">
                     <div class="category-icon"><i class="fas fa-globe"></i></div>
                     <h2>代理</h2>
                 </div>
-                <ul class="links">
-                    <li>
-                        <a href="https://dash.domain.digitalplat.org/panel/main" target="_blank">
-                            <div class="link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">DigitalPlat 面板</div>
-                                <div class="link-desc">域名管理与控制面板</div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://1024tools.com/uuid" target="_blank">
-                            <div class="link-icon"><i class="fas fa-key"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">UUID 生成器</div>
-                                <div class="link-desc">在线生成唯一标识符</div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://www.spaceship.com/zh/" target="_blank">
-                            <div class="link-icon"><i class="fas fa-rocket"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">Spaceship低价域名</div>
-                                <div class="link-desc">全球知名的低价域名注册商</div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://www.yudou.us" target="_blank">
-                            <div class="link-icon"><i class="fas fa-share-alt"></i></div>
-                            <div class="link-text">
-                                <div class="link-title">玉豆分享</div>
-                                <div class="link-desc">优质资源分享平台</div>
-                            </div>
-                        </a>
-                    </li>
+                <ul class="links" id="proxy-links">
+                    <!-- 链接将通过JavaScript动态加载 -->
                 </ul>
             </div>
         </div>
     </div>
+
+    <script>
+        // 默认数据
+        const defaultLinks = {
+            tools: [
+                { title: "GitHub", desc: "全球最大的代码托管平台", url: "https://github.com/dashboard", icon: "fab fa-github" },
+                { title: "MoeMail邮箱", desc: "简洁美观的在线邮箱服务", url: "https://moemail.app/zh-CN/moe", icon: "fas fa-envelope" },
+                { title: "4K高清壁纸", desc: "海量免费4K高清壁纸资源", url: "https://haowallpaper.com/wallpaperForum", icon: "fas fa-image" },
+                { title: "678辅助网", desc: "实用的辅助工具与资源", url: "https://www.678cv.com", icon: "fas fa-hands-helping" }
+            ],
+            ai: [
+                { title: "DeepSeek", desc: "强大的AI对话助手", url: "https://chat.deepseek.com", icon: "fas fa-brain" },
+                { title: "豆包", desc: "字节跳动推出的AI助手", url: "https://www.doubao.com/chat/", icon: "fas fa-bolt" },
+                { title: "Grok", desc: "xAI开发的AI聊天机器人", url: "https://grok.com", icon: "fas fa-bolt-lightning" },
+                { title: "ChatGPT", desc: "OpenAI开发的AI对话模型", url: "https://chatgpt.com", icon: "fas fa-comment-dots" }
+            ],
+            video: [
+                { title: "樱之空", desc: "优质的在线视频观看平台", url: "https://skr.skrcc.cc:666/?ref=www.zjnav.com", icon: "fas fa-film" },
+                { title: "咕咕番", desc: "丰富的动漫与影视资源", url: "https://www.gugufans.cc", icon: "fas fa-play-circle" }
+            ],
+            games: [
+                { title: "Switch520", desc: "Switch游戏资源分享平台", url: "https://www.gamer520.com", icon: "fas fa-dice" },
+                { title: "科伊索", desc: "游戏资源与社区平台", url: "https://koyso.com", icon: "fas fa-joystick" }
+            ],
+            proxy: [
+                { title: "DigitalPlat 面板", desc: "域名管理与控制面板", url: "https://dash.domain.digitalplat.org/panel/main", icon: "fas fa-tachometer-alt" },
+                { title: "UUID 生成器", desc: "在线生成唯一标识符", url: "https://1024tools.com/uuid", icon: "fas fa-key" },
+                { title: "Spaceship低价域名", desc: "全球知名的低价域名注册商", url: "https://www.spaceship.com/zh/", icon: "fas fa-rocket" },
+                { title: "玉豆分享", desc: "优质资源分享平台", url: "https://www.yudou.us", icon: "fas fa-share-alt" }
+            ]
+        };
+
+        // 获取或初始化数据
+        function getLinks() {
+            const savedLinks = localStorage.getItem('navLinks');
+            return savedLinks ? JSON.parse(savedLinks) : defaultLinks;
+        }
+
+        // 保存数据到localStorage
+        function saveLinks(links) {
+            localStorage.setItem('navLinks', JSON.stringify(links));
+        }
+
+        // 渲染链接
+        function renderLinks() {
+            const links = getLinks();
+            
+            // 清空所有链接列表
+            document.querySelectorAll('.links').forEach(list => {
+                list.innerHTML = '';
+            });
+            
+            // 为每个分类渲染链接
+            for (const category in links) {
+                const list = document.getElementById(`${category}-links`);
+                if (list) {
+                    links[category].forEach((link, index) => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <a href="${link.url}" target="_blank">
+                                <div class="link-icon"><i class="${link.icon}"></i></div>
+                                <div class="link-text">
+                                    <div class="link-title">${link.title}</div>
+                                    <div class="link-desc">${link.desc}</div>
+                                </div>
+                            </a>
+                            <button class="delete-btn" data-category="${category}" data-index="${index}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        `;
+                        list.appendChild(li);
+                    });
+                }
+            }
+            
+            // 添加删除事件监听
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const category = this.dataset.category;
+                    const index = parseInt(this.dataset.index);
+                    deleteLink(category, index);
+                });
+            });
+        }
+
+        // 删除链接
+        function deleteLink(category, index) {
+            const links = getLinks();
+            if (links[category] && links[category][index]) {
+                links[category].splice(index, 1);
+                saveLinks(links);
+                renderLinks();
+            }
+        }
+
+        // 添加链接
+        function addLink(linkData) {
+            const links = getLinks();
+            const category = linkData.category;
+            
+            if (!links[category]) {
+                links[category] = [];
+            }
+            
+            links[category].push({
+                title: linkData.title,
+                desc: linkData.description,
+                url: linkData.url,
+                icon: linkData.icon
+            });
+            
+            saveLinks(links);
+            renderLinks();
+        }
+
+        // 重置数据
+        function resetData() {
+            if (confirm('确定要重置所有数据吗？这将删除您添加的所有自定义链接。')) {
+                localStorage.removeItem('navLinks');
+                renderLinks();
+            }
+        }
+
+        // 切换编辑模式
+        function toggleEditMode() {
+            const isEditing = document.body.classList.toggle('editing');
+            const toggleBtn = document.getElementById('toggleEdit');
+            const addBtn = document.getElementById('addLink');
+            const resetBtn = document.getElementById('resetData');
+            
+            if (isEditing) {
+                toggleBtn.innerHTML = '<i class="fas fa-times"></i> 退出编辑';
+                addBtn.style.display = 'flex';
+                resetBtn.style.display = 'flex';
+                
+                // 显示所有删除按钮
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.style.opacity = '1';
+                });
+            } else {
+                toggleBtn.innerHTML = '<i class="fas fa-edit"></i> 编辑模式';
+                addBtn.style.display = 'none';
+                resetBtn.style.display = 'none';
+                document.getElementById('addLinkForm').style.display = 'none';
+                
+                // 隐藏所有删除按钮
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.style.opacity = '0';
+                });
+            }
+        }
+
+        // 显示添加链接表单
+        function showAddLinkForm() {
+            document.getElementById('addLinkForm').style.display = 'block';
+        }
+
+        // 隐藏添加链接表单
+        function hideAddLinkForm() {
+            document.getElementById('addLinkForm').style.display = 'none';
+            document.getElementById('linkForm').reset();
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 渲染初始链接
+            renderLinks();
+            
+            // 添加事件监听
+            document.getElementById('toggleEdit').addEventListener('click', toggleEditMode);
+            document.getElementById('addLink').addEventListener('click', showAddLinkForm);
+            document.getElementById('resetData').addEventListener('click', resetData);
+            document.getElementById('cancelAdd').addEventListener('click', hideAddLinkForm);
+            
+            // 处理表单提交
+            document.getElementById('linkForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    category: document.getElementById('category').value,
+                    title: document.getElementById('title').value,
+                    description: document.getElementById('description').value,
+                    url: document.getElementById('url').value,
+                    icon: document.getElementById('icon').value
+                };
+                
+                addLink(formData);
+                hideAddLinkForm();
+            });
+        });
+    </script>
 </body>
 </html>
