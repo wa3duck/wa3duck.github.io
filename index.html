@@ -6,7 +6,638 @@
     <title>实用资源导航 - 一站式工具集合</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 原有样式保持不变，添加新样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.8rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .user-controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+        
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .category {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .category::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+        }
+        
+        .tools::before { background: linear-gradient(90deg, #3498db, #2980b9); }
+        .ai::before { background: linear-gradient(90deg, #9b59b6, #8e44ad); }
+        .games::before { background: linear-gradient(90deg, #2ecc71, #27ae60); }
+        .proxy::before { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+        .video::before { background: linear-gradient(90deg, #e67e22, #d35400); }
+        
+        .category:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .category-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.5rem;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tools .category-icon { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .ai .category-icon { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .games .category-icon { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .proxy .category-icon { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .video .category-icon { background: linear-gradient(135deg, #e67e22, #d35400); }
+        
+        .category h2 {
+            font-size: 1.6rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .links {
+            list-style: none;
+        }
+        
+        .links li {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .links a {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #34495e;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            flex: 1;
+        }
+        
+        .links a:hover {
+            background-color: #e9ecef;
+            transform: translateX(8px);
+            border-left-color: #3498db;
+        }
+        
+        .link-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+        }
+        
+        .link-text {
+            flex: 1;
+        }
+        
+        .link-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .link-desc {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .links li:hover .delete-btn {
+            opacity: 1;
+        }
+        
+        .add-link-form {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+            display: none;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            position: relative;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        
+        /* 博客样式 */
+        .blog-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .blog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .blog-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .blog-list {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .blog-post {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .blog-post:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .blog-post-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .blog-post-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .blog-post-content {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .blog-post-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+            gap: 10px;
+        }
+        
+        /* 管理员面板样式 */
+        .admin-panel {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 40px;
+            display: none;
+        }
+        
+        .admin-tabs {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        
+        .admin-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .admin-tab.active {
+            border-bottom-color: #3498db;
+            color: #3498db;
+            font-weight: 600;
+        }
+        
+        .admin-content {
+            display: none;
+        }
+        
+        .admin-content.active {
+            display: block;
+        }
+        
+        .user-list, .blog-list-admin {
+            list-style: none;
+        }
+        
+        .user-item, .blog-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .user-info, .blog-info {
+            flex: 1;
+        }
+        
+        .user-actions, .blog-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .user-status {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background: #e8f6f3;
+            color: #27ae60;
+        }
+        
+        .status-blocked {
+            background: #fdedec;
+            color: #e74c3c;
+        }
+        
+        /* 个人中心样式 */
+        .profile-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 40px;
+            display: none;
+        }
+        
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .profile-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+        
+        .profile-sidebar {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .profile-nav {
+            list-style: none;
+        }
+        
+        .profile-nav li {
+            margin-bottom: 10px;
+        }
+        
+        .profile-nav a {
+            display: block;
+            padding: 12px 15px;
+            background: white;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .profile-nav a:hover,
+        .profile-nav a.active {
+            background: #e9ecef;
+            border-left-color: #3498db;
+            color: #3498db;
+        }
+        
+        .profile-main {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .profile-tab {
+            display: none;
+        }
+        
+        .profile-tab.active {
+            display: block;
+        }
+        
+        .user-info-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            color: white;
+            font-size: 2.5rem;
+        }
+        
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .my-blogs-list {
+            list-style: none;
+        }
+        
+        .my-blog-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .my-blog-info {
+            flex: 1;
+        }
+        
+        .my-blog-actions {
+            display: flex;
+            gap: 10px;
+        }
         
         /* 搜索栏样式 */
         .search-container {
@@ -293,6 +924,29 @@
         
         /* 响应式调整 */
         @media (max-width: 768px) {
+            .categories {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .edit-controls, .user-controls {
+                position: static;
+                justify-content: center;
+                margin-top: 20px;
+            }
+            
+            .header-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+            
             .search-container {
                 margin: 0 15px 30px;
             }
@@ -348,6 +1002,90 @@
                 </button>
             </div>
         </header>
+        
+        <!-- 个人中心区域 -->
+        <div id="profileSection" class="profile-section">
+            <div class="profile-header">
+                <h2 class="profile-title">个人中心</h2>
+                <button id="closeProfile" class="btn btn-danger">
+                    <i class="fas fa-times"></i> 关闭
+                </button>
+            </div>
+            <div class="profile-content">
+                <div class="profile-sidebar">
+                    <ul class="profile-nav">
+                        <li><a href="#profile-info" class="active" data-tab="info">个人信息</a></li>
+                        <li><a href="#profile-blogs" data-tab="blogs">我的博客</a></li>
+                        <li><a href="#profile-links" data-tab="links">我的链接</a></li>
+                        <li><a href="#profile-settings" data-tab="settings">账户设置</a></li>
+                    </ul>
+                </div>
+                <div class="profile-main">
+                    <div id="infoTab" class="profile-tab active">
+                        <div class="user-info-card">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h3 id="profileUserName">用户名</h3>
+                            <p id="profileUserEmail">邮箱</p>
+                            <p id="profileUserRole">角色</p>
+                        </div>
+                        <div class="user-stats">
+                            <div class="stat-card">
+                                <div class="stat-value" id="blogsCount">0</div>
+                                <div class="stat-label">发布的博客</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="linksCount">0</div>
+                                <div class="stat-label">添加的链接</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="joinDays">0</div>
+                                <div class="stat-label">加入天数</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="blogsTab" class="profile-tab">
+                        <h3>我的博客</h3>
+                        <button id="addBlogBtnProfile" class="btn btn-success" style="margin-bottom: 15px;">
+                            <i class="fas fa-plus"></i> 写博客
+                        </button>
+                        <ul class="my-blogs-list" id="myBlogsList">
+                            <!-- 我的博客列表将通过JavaScript动态加载 -->
+                        </ul>
+                    </div>
+                    
+                    <div id="linksTab" class="profile-tab">
+                        <h3>我添加的链接</h3>
+                        <ul class="my-blogs-list" id="myLinksList">
+                            <!-- 我的链接列表将通过JavaScript动态加载 -->
+                        </ul>
+                    </div>
+                    
+                    <div id="settingsTab" class="profile-tab">
+                        <h3>账户设置</h3>
+                        <form id="profileSettingsForm">
+                            <div class="form-group">
+                                <label for="profileUsername">用户名</label>
+                                <input type="text" id="profileUsername" class="form-control" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="profileEmail">邮箱</label>
+                                <input type="email" id="profileEmail" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="profileJoinDate">注册日期</label>
+                                <input type="text" id="profileJoinDate" class="form-control" disabled>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-success">保存设置</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <!-- 用户个人主页 -->
         <div id="userProfilePage" class="profile-section" style="display: none;">
@@ -423,9 +1161,238 @@
             </div>
         </div>
         
-        <!-- 原有的模态框和内容保持不变 -->
-        <!-- ... -->
+        <!-- 用户登录/注册模态框 -->
+        <div id="userModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="userModalTitle">用户登录</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <form id="userForm">
+                    <div class="form-group">
+                        <label for="username">用户名</label>
+                        <input type="text" id="username" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">密码</label>
+                        <input type="password" id="password" class="form-control" required>
+                    </div>
+                    <div class="form-group" id="emailGroup" style="display: none;">
+                        <label for="email">邮箱</label>
+                        <input type="email" id="email" class="form-control">
+                    </div>
+                    <div class="form-group" id="codeGroup" style="display: none;">
+                        <label for="code">验证码</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="code" class="form-control">
+                            <button type="button" id="sendCode" class="btn btn-primary">发送验证码</button>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="switchMode" class="btn btn-warning">切换到注册</button>
+                        <button type="submit" class="btn btn-success">登录</button>
+                    </div>
+                </form>
+            </div>
+        </div>
         
+        <!-- 修改密码模态框 -->
+        <div id="passwordModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">修改密码</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label for="oldPassword">当前密码</label>
+                        <input type="password" id="oldPassword" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">新密码</label>
+                        <input type="password" id="newPassword" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">确认新密码</label>
+                        <input type="password" id="confirmPassword" class="form-control" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-danger close-modal">取消</button>
+                        <button type="submit" class="btn btn-success">修改密码</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 管理员面板 -->
+        <div id="adminPanel" class="admin-panel">
+            <div class="admin-tabs">
+                <div class="admin-tab active" data-tab="users">用户管理</div>
+                <div class="admin-tab" data-tab="blogs">博客管理</div>
+                <div class="admin-tab" data-tab="settings">系统设置</div>
+            </div>
+            
+            <div id="usersTab" class="admin-content active">
+                <h3>用户管理</h3>
+                <ul class="user-list" id="userList">
+                    <!-- 用户列表将通过JavaScript动态加载 -->
+                </ul>
+            </div>
+            
+            <div id="blogsTab" class="admin-content">
+                <h3>博客管理</h3>
+                <button id="addBlogBtn" class="btn btn-success" style="margin-bottom: 15px;">
+                    <i class="fas fa-plus"></i> 添加博客
+                </button>
+                <ul class="blog-list-admin" id="blogListAdmin">
+                    <!-- 博客列表将通过JavaScript动态加载 -->
+                </ul>
+            </div>
+            
+            <div id="settingsTab" class="admin-content">
+                <h3>系统设置</h3>
+                <div class="form-group">
+                    <label for="siteTitle">网站标题</label>
+                    <input type="text" id="siteTitle" class="form-control" value="实用资源导航">
+                </div>
+                <div class="form-group">
+                    <label for="siteDescription">网站描述</label>
+                    <input type="text" id="siteDescription" class="form-control" value="精心挑选的实用网站与工具，提高工作效率与生活质量">
+                </div>
+                <button id="saveSettings" class="btn btn-success">保存设置</button>
+            </div>
+        </div>
+        
+        <!-- 博客区域 -->
+        <div class="blog-section">
+            <div class="blog-header">
+                <h2 class="blog-title">最新博客</h2>
+                <button id="addBlogBtnUser" class="btn btn-success" style="display: none;">
+                    <i class="fas fa-plus"></i> 写博客
+                </button>
+            </div>
+            <div class="blog-list" id="blogList">
+                <!-- 博客内容将通过JavaScript动态加载 -->
+            </div>
+        </div>
+        
+        <!-- 添加博客模态框 -->
+        <div id="blogModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="blogModalTitle">添加博客</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <form id="blogForm">
+                    <div class="form-group">
+                        <label for="blogTitle">标题</label>
+                        <input type="text" id="blogTitle" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="blogContent">内容</label>
+                        <textarea id="blogContent" class="form-control" rows="10" required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-danger close-modal">取消</button>
+                        <button type="submit" class="btn btn-success">发布</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="addLinkForm" class="add-link-form">
+            <h3>添加新链接</h3>
+            <form id="linkForm">
+                <div class="form-group">
+                    <label for="category">分类</label>
+                    <select id="category" class="form-control" required>
+                        <option value="tools">工具</option>
+                        <option value="ai">AI</option>
+                        <option value="video">视频</option>
+                        <option value="games">游戏</option>
+                        <option value="proxy">代理</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="title">标题</label>
+                    <input type="text" id="title" class="form-control" placeholder="例如: GitHub" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">描述</label>
+                    <input type="text" id="description" class="form-control" placeholder="例如: 全球最大的代码托管平台" required>
+                </div>
+                <div class="form-group">
+                    <label for="url">URL</label>
+                    <input type="url" id="url" class="form-control" placeholder="例如: https://github.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="icon">图标类名</label>
+                    <input type="text" id="icon" class="form-control" placeholder="例如: fab fa-github" required>
+                    <small>请使用Font Awesome图标类名，例如: fab fa-github, fas fa-tools</small>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancelAdd" class="btn btn-danger">取消</button>
+                    <button type="submit" class="btn btn-success">添加</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="categories">
+            <!-- 工具分类 -->
+            <div class="category tools" data-category="tools">
+                <div class="category-title">
+                    <div class="category-icon"><i class="fas fa-tools"></i></div>
+                    <h2>工具</h2>
+                </div>
+                <ul class="links" id="tools-links">
+                    <!-- 链接将通过JavaScript动态加载 -->
+                </ul>
+            </div>
+            
+            <!-- AI分类 -->
+            <div class="category ai" data-category="ai">
+                <div class="category-title">
+                    <div class="category-icon"><i class="fas fa-robot"></i></div>
+                    <h2>AI</h2>
+                </div>
+                <ul class="links" id="ai-links">
+                    <!-- 链接将通过JavaScript动态加载 -->
+                </ul>
+            </div>
+            
+            <!-- 视频分类 -->
+            <div class="category video" data-category="video">
+                <div class="category-title">
+                    <div class="category-icon"><i class="fas fa-video"></i></div>
+                    <h2>视频</h2>
+                </div>
+                <ul class="links" id="video-links">
+                    <!-- 链接将通过JavaScript动态加载 -->
+                </ul>
+            </div>
+            
+            <!-- 游戏分类 -->
+            <div class="category games" data-category="games">
+                <div class="category-title">
+                    <div class="category-icon"><i class="fas fa-gamepad"></i></div>
+                    <h2>游戏</h2>
+                </div>
+                <ul class="links" id="games-links">
+                    <!-- 链接将通过JavaScript动态加载 -->
+                </ul>
+            </div>
+            
+            <!-- 代理分类 -->
+            <div class="category proxy" data-category="proxy">
+                <div class="category-title">
+                    <div class="category-icon"><i class="fas fa-globe"></i></div>
+                    <h2>代理</h2>
+                </div>
+                <ul class="links" id="proxy-links">
+                    <!-- 链接将通过JavaScript动态加载 -->
+                </ul>
+            </div>
+        </div>
     </div>
     
     <!-- 主题切换按钮 -->
@@ -436,6 +1403,65 @@
     </div>
 
     <script>
+        // 默认数据
+        const defaultLinks = {
+            tools: [
+                { title: "GitHub", desc: "全球最大的代码托管平台", url: "https://github.com/dashboard", icon: "fab fa-github" },
+                { title: "MoeMail邮箱", desc: "简洁美观的在线邮箱服务", url: "https://moemail.app/zh-CN/moe", icon: "fas fa-envelope" },
+                { title: "4K高清壁纸", desc: "海量免费4K高清壁纸资源", url: "https://haowallpaper.com/wallpaperForum", icon: "fas fa-image" },
+                { title: "678辅助网", desc: "实用的辅助工具与资源", url: "https://www.678cv.com", icon: "fas fa-hands-helping" }
+            ],
+            ai: [
+                { title: "DeepSeek", desc: "强大的AI对话助手", url: "https://chat.deepseek.com", icon: "fas fa-brain" },
+                { title: "豆包", desc: "字节跳动推出的AI助手", url: "https://www.doubao.com/chat/", icon: "fas fa-bolt" },
+                { title: "Grok", desc: "xAI开发的AI聊天机器人", url: "https://grok.com", icon: "fas fa-bolt-lightning" },
+                { title: "ChatGPT", desc: "OpenAI开发的AI对话模型", url: "https://chatgpt.com", icon: "fas fa-comment-dots" }
+            ],
+            video: [
+                { title: "樱之空", desc: "优质的在线视频观看平台", url: "https://skr.skrcc.cc:666/?ref=www.zjnav.com", icon: "fas fa-film" },
+                { title: "咕咕番", desc: "丰富的动漫与影视资源", url: "https://www.gugufans.cc", icon: "fas fa-play-circle" }
+            ],
+            games: [
+                { title: "Switch520", desc: "Switch游戏资源分享平台", url: "https://www.gamer520.com", icon: "fas fa-dice" },
+                { title: "科伊索", desc: "游戏资源与社区平台", url: "https://koyso.com", icon: "fas fa-joystick" }
+            ],
+            proxy: [
+                { title: "DigitalPlat 面板", desc: "域名管理与控制面板", url: "https://dash.domain.digitalplat.org/panel/main", icon: "fas fa-tachometer-alt" },
+                { title: "UUID 生成器", desc: "在线生成唯一标识符", url: "https://1024tools.com/uuid", icon: "fas fa-key" },
+                { title: "Spaceship低价域名", desc: "全球知名的低价域名注册商", url: "https://www.spaceship.com/zh/", icon: "fas fa-rocket" },
+                { title: "玉豆分享", desc: "优质资源分享平台", url: "https://www.yudou.us", icon: "fas fa-share-alt" }
+            ]
+        };
+
+        // 默认博客数据
+        const defaultBlogs = [
+            {
+                id: 1,
+                title: "欢迎使用实用资源导航",
+                content: "这是一个精心设计的资源导航页面，汇集了各类实用工具和网站，帮助您提高工作效率和生活质量。",
+                author: "管理员",
+                date: new Date().toISOString().split('T')[0]
+            },
+            {
+                id: 2,
+                title: "如何高效使用本导航",
+                content: "您可以根据分类快速找到需要的资源，也可以使用搜索功能定位特定工具。登录后还可以自定义添加您常用的网站链接。",
+                author: "管理员",
+                date: new Date().toISOString().split('T')[0]
+            }
+        ];
+
+        // 默认用户数据
+        const defaultUsers = [
+            {
+                username: "waduck",
+                password: "w1847236328",
+                email: "admin@example.com",
+                isAdmin: true,
+                isBlocked: false
+            }
+        ];
+
         // 扩展默认数据，添加点赞和评分功能
         function extendDefaultData() {
             // 初始化点赞数据
@@ -555,8 +1581,65 @@
             
             return ratings[linkId] && ratings[linkId][currentUser.username] || 0;
         }
-        
-        // 修改渲染链接函数，添加点赞和评分
+
+        // 获取或初始化数据
+        function getLinks() {
+            const savedLinks = localStorage.getItem('navLinks');
+            return savedLinks ? JSON.parse(savedLinks) : defaultLinks;
+        }
+
+        // 获取或初始化博客数据
+        function getBlogs() {
+            const savedBlogs = localStorage.getItem('navBlogs');
+            return savedBlogs ? JSON.parse(savedBlogs) : defaultBlogs;
+        }
+
+        // 获取或初始化用户数据
+        function getUsers() {
+            const savedUsers = localStorage.getItem('navUsers');
+            return savedUsers ? JSON.parse(savedUsers) : defaultUsers;
+        }
+
+        // 获取或初始化用户个人数据
+        function getUserProfile(username) {
+            const savedProfiles = localStorage.getItem('userProfiles');
+            const profiles = savedProfiles ? JSON.parse(savedProfiles) : {};
+            
+            if (!profiles[username]) {
+                profiles[username] = {
+                    joinDate: new Date().toISOString().split('T')[0],
+                    addedLinks: [],
+                    email: username + '@example.com' // 默认邮箱
+                };
+                localStorage.setItem('userProfiles', JSON.stringify(profiles));
+            }
+            
+            return profiles[username];
+        }
+
+        // 更新用户个人资料
+        function updateUserProfile(username, profileData) {
+            const savedProfiles = localStorage.getItem('userProfiles');
+            const profiles = savedProfiles ? JSON.parse(savedProfiles) : {};
+            
+            profiles[username] = { ...profiles[username], ...profileData };
+            localStorage.setItem('userProfiles', JSON.stringify(profiles));
+        }
+
+        // 保存数据到localStorage
+        function saveLinks(links) {
+            localStorage.setItem('navLinks', JSON.stringify(links));
+        }
+
+        function saveBlogs(blogs) {
+            localStorage.setItem('navBlogs', JSON.stringify(blogs));
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem('navUsers', JSON.stringify(users));
+        }
+
+        // 渲染链接
         function renderLinks() {
             const links = getLinks();
             
@@ -642,7 +1725,569 @@
                 });
             });
         }
-        
+
+        // 渲染博客
+        function renderBlogs() {
+            const blogs = getBlogs();
+            const blogList = document.getElementById('blogList');
+            const blogListAdmin = document.getElementById('blogListAdmin');
+            const currentUser = getCurrentUser();
+            
+            // 清空博客列表
+            if (blogList) blogList.innerHTML = '';
+            if (blogListAdmin) blogListAdmin.innerHTML = '';
+            
+            // 渲染博客列表
+            blogs.forEach(blog => {
+                const canEdit = currentUser && (currentUser.isAdmin || blog.author === currentUser.username);
+                
+                const blogElement = document.createElement('div');
+                blogElement.className = 'blog-post';
+                blogElement.innerHTML = `
+                    <h3 class="blog-post-title">${blog.title}</h3>
+                    <div class="blog-post-meta">
+                        <span><i class="fas fa-user"></i> ${blog.author}</span>
+                        <span><i class="fas fa-calendar"></i> ${blog.date}</span>
+                    </div>
+                    <div class="blog-post-content">${blog.content}</div>
+                    ${canEdit ? `
+                    <div class="blog-post-actions">
+                        <button class="btn btn-primary edit-blog" data-id="${blog.id}">
+                            <i class="fas fa-edit"></i> 编辑
+                        </button>
+                        <button class="btn btn-danger delete-blog" data-id="${blog.id}">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
+                    ` : ''}
+                `;
+                
+                if (blogList) blogList.appendChild(blogElement.cloneNode(true));
+                
+                // 管理员博客列表
+                if (blogListAdmin && currentUser && currentUser.isAdmin) {
+                    const adminBlogElement = document.createElement('li');
+                    adminBlogElement.className = 'blog-item';
+                    adminBlogElement.innerHTML = `
+                        <div class="blog-info">
+                            <h4>${blog.title}</h4>
+                            <p>作者: ${blog.author} | 日期: ${blog.date}</p>
+                        </div>
+                        <div class="blog-actions">
+                            <button class="btn btn-primary edit-blog" data-id="${blog.id}">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-danger delete-blog" data-id="${blog.id}">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </div>
+                    `;
+                    blogListAdmin.appendChild(adminBlogElement);
+                }
+            });
+            
+            // 添加博客事件监听
+            document.querySelectorAll('.edit-blog').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const blogId = parseInt(this.dataset.id);
+                    editBlog(blogId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-blog').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const blogId = parseInt(this.dataset.id);
+                    deleteBlog(blogId);
+                });
+            });
+        }
+
+        // 渲染用户列表
+        function renderUsers() {
+            const users = getUsers();
+            const userList = document.getElementById('userList');
+            const currentUser = getCurrentUser();
+            
+            if (!userList || !currentUser || !currentUser.isAdmin) return;
+            
+            userList.innerHTML = '';
+            
+            users.forEach(user => {
+                const userElement = document.createElement('li');
+                userElement.className = 'user-item';
+                userElement.innerHTML = `
+                    <div class="user-info">
+                        <h4>${user.username} ${user.isAdmin ? '<span style="color: #e74c3c;">(管理员)</span>' : ''}</h4>
+                        <p>邮箱: ${user.email}</p>
+                    </div>
+                    <div class="user-actions">
+                        <span class="user-status ${user.isBlocked ? 'status-blocked' : 'status-active'}">
+                            ${user.isBlocked ? '已拉黑' : '正常'}
+                        </span>
+                        ${!user.isAdmin ? `
+                        <button class="btn ${user.isBlocked ? 'btn-success' : 'btn-warning'} toggle-block" data-username="${user.username}">
+                            <i class="fas ${user.isBlocked ? 'fa-check' : 'fa-ban'}"></i> ${user.isBlocked ? '解封' : '拉黑'}
+                        </button>
+                        ` : ''}
+                    </div>
+                `;
+                userList.appendChild(userElement);
+            });
+            
+            // 添加用户管理事件监听
+            document.querySelectorAll('.toggle-block').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const username = this.dataset.username;
+                    toggleBlockUser(username);
+                });
+            });
+        }
+
+        // 渲染个人中心
+        function renderProfile() {
+            const currentUser = getCurrentUser();
+            if (!currentUser) return;
+            
+            const profile = getUserProfile(currentUser.username);
+            const blogs = getBlogs();
+            const links = getLinks();
+            
+            // 更新个人信息
+            document.getElementById('profileUserName').textContent = currentUser.username;
+            document.getElementById('profileUserEmail').textContent = profile.email || currentUser.email || '未设置';
+            document.getElementById('profileUserRole').textContent = currentUser.isAdmin ? '管理员' : '普通用户';
+            
+            // 更新统计信息
+            const userBlogs = blogs.filter(blog => blog.author === currentUser.username);
+            document.getElementById('blogsCount').textContent = userBlogs.length;
+            
+            // 计算用户添加的链接数量
+            let userLinksCount = 0;
+            for (const category in links) {
+                userLinksCount += links[category].filter(link => link.addedBy === currentUser.username).length;
+            }
+            document.getElementById('linksCount').textContent = userLinksCount;
+            
+            // 计算加入天数
+            const joinDate = new Date(profile.joinDate);
+            const today = new Date();
+            const diffTime = Math.abs(today - joinDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            document.getElementById('joinDays').textContent = diffDays;
+            
+            // 渲染我的博客列表
+            const myBlogsList = document.getElementById('myBlogsList');
+            myBlogsList.innerHTML = '';
+            
+            userBlogs.forEach(blog => {
+                const blogItem = document.createElement('li');
+                blogItem.className = 'my-blog-item';
+                blogItem.innerHTML = `
+                    <div class="my-blog-info">
+                        <h4>${blog.title}</h4>
+                        <p>日期: ${blog.date} | 阅读量: 0</p>
+                    </div>
+                    <div class="my-blog-actions">
+                        <button class="btn btn-primary edit-my-blog" data-id="${blog.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-danger delete-my-blog" data-id="${blog.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                myBlogsList.appendChild(blogItem);
+            });
+            
+            // 渲染我的链接列表
+            const myLinksList = document.getElementById('myLinksList');
+            myLinksList.innerHTML = '';
+            
+            for (const category in links) {
+                const userLinks = links[category].filter(link => link.addedBy === currentUser.username);
+                
+                userLinks.forEach(link => {
+                    const linkItem = document.createElement('li');
+                    linkItem.className = 'my-blog-item';
+                    linkItem.innerHTML = `
+                        <div class="my-blog-info">
+                            <h4>${link.title}</h4>
+                            <p>分类: ${category} | URL: ${link.url}</p>
+                        </div>
+                        <div class="my-blog-actions">
+                            <a href="${link.url}" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    `;
+                    myLinksList.appendChild(linkItem);
+                });
+            }
+            
+            // 更新设置表单
+            document.getElementById('profileUsername').value = currentUser.username;
+            document.getElementById('profileEmail').value = profile.email || currentUser.email || '';
+            document.getElementById('profileJoinDate').value = profile.joinDate;
+            
+            // 添加个人中心事件监听
+            document.querySelectorAll('.edit-my-blog').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const blogId = parseInt(this.dataset.id);
+                    editBlog(blogId);
+                    hideProfile();
+                });
+            });
+            
+            document.querySelectorAll('.delete-my-blog').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const blogId = parseInt(this.dataset.id);
+                    deleteBlog(blogId);
+                });
+            });
+        }
+
+        // 删除链接
+        function deleteLink(category, index) {
+            const links = getLinks();
+            if (links[category] && links[category][index]) {
+                links[category].splice(index, 1);
+                saveLinks(links);
+                renderLinks();
+            }
+        }
+
+        // 添加链接
+        function addLink(linkData) {
+            const links = getLinks();
+            const category = linkData.category;
+            const currentUser = getCurrentUser();
+            
+            if (!links[category]) {
+                links[category] = [];
+            }
+            
+            links[category].push({
+                title: linkData.title,
+                desc: linkData.description,
+                url: linkData.url,
+                icon: linkData.icon,
+                addedBy: currentUser ? currentUser.username : 'anonymous'
+            });
+            
+            saveLinks(links);
+            renderLinks();
+            
+            // 记录用户添加的链接
+            if (currentUser) {
+                const profile = getUserProfile(currentUser.username);
+                profile.addedLinks.push({
+                    category: category,
+                    title: linkData.title,
+                    url: linkData.url
+                });
+                updateUserProfile(currentUser.username, profile);
+            }
+        }
+
+        // 添加博客
+        function addBlog(blogData) {
+            const blogs = getBlogs();
+            const currentUser = getCurrentUser();
+            
+            if (!currentUser) return;
+            
+            const newBlog = {
+                id: blogs.length > 0 ? Math.max(...blogs.map(b => b.id)) + 1 : 1,
+                title: blogData.title,
+                content: blogData.content,
+                author: currentUser.username,
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            blogs.push(newBlog);
+            saveBlogs(blogs);
+            renderBlogs();
+        }
+
+        // 编辑博客
+        function editBlog(blogId) {
+            const blogs = getBlogs();
+            const blog = blogs.find(b => b.id === blogId);
+            
+            if (!blog) return;
+            
+            document.getElementById('blogModalTitle').textContent = '编辑博客';
+            document.getElementById('blogTitle').value = blog.title;
+            document.getElementById('blogContent').value = blog.content;
+            
+            // 临时保存博客ID以便更新
+            document.getElementById('blogForm').dataset.editingId = blogId;
+            
+            showModal('blogModal');
+        }
+
+        // 更新博客
+        function updateBlog(blogId, blogData) {
+            const blogs = getBlogs();
+            const blogIndex = blogs.findIndex(b => b.id === blogId);
+            const currentUser = getCurrentUser();
+            
+            if (blogIndex === -1) return;
+            
+            // 权限检查：管理员或博客作者可以编辑
+            if (!currentUser || 
+                (!currentUser.isAdmin && blogs[blogIndex].author !== currentUser.username)) {
+                alert('您没有权限编辑此博客');
+                return;
+            }
+            
+            blogs[blogIndex] = {
+                ...blogs[blogIndex],
+                title: blogData.title,
+                content: blogData.content
+            };
+            
+            saveBlogs(blogs);
+            renderBlogs();
+        }
+
+        // 删除博客
+        function deleteBlog(blogId) {
+            if (!confirm('确定要删除这篇博客吗？')) return;
+            
+            const blogs = getBlogs();
+            const blogIndex = blogs.findIndex(b => b.id === blogId);
+            const currentUser = getCurrentUser();
+            
+            if (blogIndex === -1) return;
+            
+            // 权限检查：管理员或博客作者可以删除
+            if (!currentUser || 
+                (!currentUser.isAdmin && blogs[blogIndex].author !== currentUser.username)) {
+                alert('您没有权限删除此博客');
+                return;
+            }
+            
+            blogs.splice(blogIndex, 1);
+            saveBlogs(blogs);
+            renderBlogs();
+        }
+
+        // 切换用户封禁状态
+        function toggleBlockUser(username) {
+            const users = getUsers();
+            const userIndex = users.findIndex(u => u.username === username);
+            
+            if (userIndex === -1) return;
+            
+            users[userIndex].isBlocked = !users[userIndex].isBlocked;
+            saveUsers(users);
+            renderUsers();
+        }
+
+        // 重置数据
+        function resetData() {
+            if (confirm('确定要重置所有数据吗？这将删除您添加的所有自定义链接。')) {
+                localStorage.removeItem('navLinks');
+                renderLinks();
+            }
+        }
+
+        // 用户相关功能
+        function getCurrentUser() {
+            return JSON.parse(localStorage.getItem('currentUser'));
+        }
+
+        function setCurrentUser(user) {
+            if (user) {
+                localStorage.setItem('currentUser', JSON.stringify(user));
+            } else {
+                localStorage.removeItem('currentUser');
+            }
+            updateUI();
+        }
+
+        function login(username, password) {
+            const users = getUsers();
+            const user = users.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                if (user.isBlocked) {
+                    alert('该账号已被封禁，无法登录');
+                    return false;
+                }
+                setCurrentUser(user);
+                return true;
+            }
+            return false;
+        }
+
+        function register(username, password, email, code) {
+            // 模拟验证码验证
+            if (code !== "123456") {
+                alert('验证码错误');
+                return false;
+            }
+            
+            const users = getUsers();
+            
+            // 检查用户名是否已存在
+            if (users.find(u => u.username === username)) {
+                alert('用户名已存在');
+                return false;
+            }
+            
+            // 检查邮箱是否已存在
+            if (users.find(u => u.email === email)) {
+                alert('邮箱已被注册');
+                return false;
+            }
+            
+            const newUser = {
+                username,
+                password,
+                email,
+                isAdmin: false,
+                isBlocked: false
+            };
+            
+            users.push(newUser);
+            saveUsers(users);
+            
+            // 创建用户个人资料
+            getUserProfile(username);
+            updateUserProfile(username, { email: email });
+            
+            setCurrentUser(newUser);
+            return true;
+        }
+
+        function changePassword(oldPassword, newPassword) {
+            const currentUser = getCurrentUser();
+            if (!currentUser) return false;
+            
+            const users = getUsers();
+            const userIndex = users.findIndex(u => u.username === currentUser.username);
+            
+            if (userIndex === -1) return false;
+            
+            if (users[userIndex].password !== oldPassword) {
+                alert('当前密码错误');
+                return false;
+            }
+            
+            users[userIndex].password = newPassword;
+            saveUsers(users);
+            
+            // 更新当前用户信息
+            currentUser.password = newPassword;
+            setCurrentUser(currentUser);
+            
+            return true;
+        }
+
+        function logout() {
+            setCurrentUser(null);
+        }
+
+        function updateUI() {
+            const currentUser = getCurrentUser();
+            const userBtn = document.getElementById('userBtn');
+            const userMenu = document.getElementById('userMenu');
+            const userName = document.getElementById('userName');
+            const adminPanelBtn = document.getElementById('adminPanelBtn');
+            const adminPanel = document.getElementById('adminPanel');
+            const addBlogBtnUser = document.getElementById('addBlogBtnUser');
+            const profileBtn = document.getElementById('profileBtn');
+            
+            if (currentUser) {
+                userBtn.style.display = 'none';
+                userMenu.style.display = 'flex';
+                userName.textContent = currentUser.username;
+                profileBtn.style.display = 'block';
+                
+                if (currentUser.isAdmin) {
+                    adminPanelBtn.style.display = 'block';
+                    addBlogBtnUser.style.display = 'block';
+                } else {
+                    adminPanelBtn.style.display = 'none';
+                    adminPanel.style.display = 'none';
+                    addBlogBtnUser.style.display = 'block';
+                }
+            } else {
+                userBtn.style.display = 'block';
+                userMenu.style.display = 'none';
+                adminPanelBtn.style.display = 'none';
+                adminPanel.style.display = 'none';
+                addBlogBtnUser.style.display = 'none';
+                profileBtn.style.display = 'none';
+                hideProfile();
+            }
+            
+            renderBlogs();
+            renderUsers();
+        }
+
+        // 模态框功能
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // 显示个人中心
+        function showProfile() {
+            document.getElementById('profileSection').style.display = 'block';
+            renderProfile();
+        }
+
+        // 隐藏个人中心
+        function hideProfile() {
+            document.getElementById('profileSection').style.display = 'none';
+        }
+
+        // 切换编辑模式
+        function toggleEditMode() {
+            const isEditing = document.body.classList.toggle('editing');
+            const toggleBtn = document.getElementById('toggleEdit');
+            const addBtn = document.getElementById('addLink');
+            const resetBtn = document.getElementById('resetData');
+            
+            if (isEditing) {
+                toggleBtn.innerHTML = '<i class="fas fa-times"></i> 退出编辑';
+                addBtn.style.display = 'flex';
+                resetBtn.style.display = 'flex';
+                
+                // 显示所有删除按钮
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.style.opacity = '1';
+                });
+            } else {
+                toggleBtn.innerHTML = '<i class="fas fa-edit"></i> 编辑模式';
+                addBtn.style.display = 'none';
+                resetBtn.style.display = 'none';
+                document.getElementById('addLinkForm').style.display = 'none';
+                
+                // 隐藏所有删除按钮
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.style.opacity = '0';
+                });
+            }
+        }
+
+        // 显示添加链接表单
+        function showAddLinkForm() {
+            document.getElementById('addLinkForm').style.display = 'block';
+        }
+
+        // 隐藏添加链接表单
+        function hideAddLinkForm() {
+            document.getElementById('addLinkForm').style.display = 'none';
+            document.getElementById('linkForm').reset();
+        }
+
         // 搜索功能
         function performSearch(query) {
             if (!query.trim()) {
@@ -801,114 +2446,7 @@
                 themeIcon.className = 'fas fa-sun';
             }
         }
-        
-        // 显示用户个人主页
-        function showUserProfile(username) {
-            const userProfilePage = document.getElementById('userProfilePage');
-            const users = getUsers();
-            const user = users.find(u => u.username === username);
-            
-            if (!user) {
-                alert('用户不存在');
-                return;
-            }
-            
-            // 更新用户信息
-            document.getElementById('userProfileTitle').textContent = `${username} 的主页`;
-            document.getElementById('viewingUserName').textContent = username;
-            document.getElementById('viewingUserRole').textContent = user.isAdmin ? '管理员' : '普通用户';
-            
-            // 获取用户个人资料
-            const profile = getUserProfile(username);
-            document.getElementById('viewingUserJoinDate').textContent = `加入日期: ${profile.joinDate}`;
-            
-            // 更新统计数据
-            const blogs = getBlogs();
-            const userBlogs = blogs.filter(blog => blog.author === username);
-            document.getElementById('viewingUserBlogsCount').textContent = userBlogs.length;
-            
-            const links = getLinks();
-            let userLinksCount = 0;
-            for (const category in links) {
-                userLinksCount += links[category].filter(link => link.addedBy === username).length;
-            }
-            document.getElementById('viewingUserLinksCount').textContent = userLinksCount;
-            
-            // 计算用户收到的点赞总数
-            const likes = JSON.parse(localStorage.getItem('linkLikes'));
-            let userLikesCount = 0;
-            for (const category in links) {
-                links[category].forEach((link, index) => {
-                    if (link.addedBy === username) {
-                        const linkId = getLinkId(category, index);
-                        userLikesCount += likes[linkId] ? likes[linkId].length : 0;
-                    }
-                });
-            }
-            document.getElementById('viewingUserLikesCount').textContent = userLikesCount;
-            
-            // 渲染用户博客
-            const userBlogsList = document.getElementById('userBlogsList');
-            userBlogsList.innerHTML = '';
-            
-            userBlogs.forEach(blog => {
-                const blogItem = document.createElement('li');
-                blogItem.className = 'my-blog-item';
-                blogItem.innerHTML = `
-                    <div class="my-blog-info">
-                        <h4>${blog.title}</h4>
-                        <p>日期: ${blog.date}</p>
-                    </div>
-                    <div class="my-blog-actions">
-                        <a href="javascript:void(0)" class="btn btn-primary view-blog" data-id="${blog.id}">
-                            <i class="fas fa-eye"></i> 查看
-                        </a>
-                    </div>
-                `;
-                userBlogsList.appendChild(blogItem);
-            });
-            
-            // 渲染用户链接
-            const userLinksList = document.getElementById('userLinksList');
-            userLinksList.innerHTML = '';
-            
-            for (const category in links) {
-                const userLinks = links[category].filter(link => link.addedBy === username);
-                
-                userLinks.forEach((link, index) => {
-                    const linkItem = document.createElement('li');
-                    linkItem.className = 'my-blog-item';
-                    const likesCount = getLinkLikes(category, index);
-                    const avgRating = getLinkRating(category, index);
-                    
-                    linkItem.innerHTML = `
-                        <div class="my-blog-info">
-                            <h4>${link.title}</h4>
-                            <p>分类: ${category} | 评分: ${avgRating} | 点赞: ${likesCount}</p>
-                        </div>
-                        <div class="my-blog-actions">
-                            <a href="${link.url}" target="_blank" class="btn btn-primary">
-                                <i class="fas fa-external-link-alt"></i>
-                            </a>
-                        </div>
-                    `;
-                    userLinksList.appendChild(linkItem);
-                });
-            }
-            
-            // 显示用户个人主页
-            userProfilePage.style.display = 'block';
-            
-            // 添加事件监听
-            document.querySelectorAll('.view-blog').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const blogId = parseInt(this.dataset.id);
-                    // 这里可以添加查看博客详情的功能
-                    alert('查看博客功能待实现');
-                });
-            });
-        }
-        
+
         // 初始化页面
         document.addEventListener('DOMContentLoaded', function() {
             // 扩展默认数据
@@ -921,6 +2459,161 @@
             renderLinks();
             renderBlogs();
             updateUI();
+            
+            // 添加事件监听
+            document.getElementById('toggleEdit').addEventListener('click', toggleEditMode);
+            document.getElementById('addLink').addEventListener('click', showAddLinkForm);
+            document.getElementById('resetData').addEventListener('click', resetData);
+            document.getElementById('cancelAdd').addEventListener('click', hideAddLinkForm);
+            
+            // 用户相关事件
+            document.getElementById('userBtn').addEventListener('click', function() {
+                document.getElementById('userModalTitle').textContent = '用户登录';
+                document.getElementById('emailGroup').style.display = 'none';
+                document.getElementById('codeGroup').style.display = 'none';
+                document.getElementById('switchMode').textContent = '切换到注册';
+                document.getElementById('userForm').querySelector('button[type="submit"]').textContent = '登录';
+                showModal('userModal');
+            });
+            
+            document.getElementById('switchMode').addEventListener('click', function() {
+                const isLogin = document.getElementById('userModalTitle').textContent === '用户登录';
+                
+                if (isLogin) {
+                    document.getElementById('userModalTitle').textContent = '用户注册';
+                    document.getElementById('emailGroup').style.display = 'block';
+                    document.getElementById('codeGroup').style.display = 'block';
+                    this.textContent = '切换到登录';
+                    document.getElementById('userForm').querySelector('button[type="submit"]').textContent = '注册';
+                } else {
+                    document.getElementById('userModalTitle').textContent = '用户登录';
+                    document.getElementById('emailGroup').style.display = 'none';
+                    document.getElementById('codeGroup').style.display = 'none';
+                    this.textContent = '切换到注册';
+                    document.getElementById('userForm').querySelector('button[type="submit"]').textContent = '登录';
+                }
+            });
+            
+            document.getElementById('sendCode').addEventListener('click', function() {
+                // 模拟发送验证码
+                alert('验证码已发送到您的邮箱：123456');
+            });
+            
+            document.getElementById('changePasswordBtn').addEventListener('click', function() {
+                showModal('passwordModal');
+            });
+            
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                logout();
+            });
+            
+            document.getElementById('adminPanelBtn').addEventListener('click', function() {
+                const adminPanel = document.getElementById('adminPanel');
+                adminPanel.style.display = adminPanel.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            // 个人中心相关事件
+            document.getElementById('profileBtn').addEventListener('click', showProfile);
+            document.getElementById('closeProfile').addEventListener('click', hideProfile);
+            
+            // 个人中心导航
+            document.querySelectorAll('.profile-nav a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 移除所有active类
+                    document.querySelectorAll('.profile-nav a').forEach(a => a.classList.remove('active'));
+                    document.querySelectorAll('.profile-tab').forEach(tab => tab.classList.remove('active'));
+                    
+                    // 添加active类到当前链接和标签页
+                    this.classList.add('active');
+                    const tabId = this.dataset.tab;
+                    document.getElementById(`${tabId}Tab`).classList.add('active');
+                });
+            });
+            
+            // 个人中心添加博客按钮
+            document.getElementById('addBlogBtnProfile').addEventListener('click', function() {
+                document.getElementById('blogModalTitle').textContent = '添加博客';
+                document.getElementById('blogForm').reset();
+                delete document.getElementById('blogForm').dataset.editingId;
+                showModal('blogModal');
+                hideProfile();
+            });
+            
+            // 个人中心设置表单提交
+            document.getElementById('profileSettingsForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const currentUser = getCurrentUser();
+                if (!currentUser) return;
+                
+                const newEmail = document.getElementById('profileEmail').value;
+                
+                // 更新用户邮箱
+                const users = getUsers();
+                const userIndex = users.findIndex(u => u.username === currentUser.username);
+                
+                if (userIndex !== -1) {
+                    users[userIndex].email = newEmail;
+                    saveUsers(users);
+                    
+                    // 更新当前用户信息
+                    currentUser.email = newEmail;
+                    setCurrentUser(currentUser);
+                    
+                    // 更新个人资料
+                    updateUserProfile(currentUser.username, { email: newEmail });
+                    
+                    alert('设置已保存！');
+                    renderProfile();
+                }
+            });
+            
+            // 博客相关事件
+            document.getElementById('addBlogBtn').addEventListener('click', function() {
+                document.getElementById('blogModalTitle').textContent = '添加博客';
+                document.getElementById('blogForm').reset();
+                delete document.getElementById('blogForm').dataset.editingId;
+                showModal('blogModal');
+            });
+            
+            document.getElementById('addBlogBtnUser').addEventListener('click', function() {
+                document.getElementById('blogModalTitle').textContent = '添加博客';
+                document.getElementById('blogForm').reset();
+                delete document.getElementById('blogForm').dataset.editingId;
+                showModal('blogModal');
+            });
+            
+            // 管理员选项卡
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 移除所有active类
+                    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+                    
+                    // 添加active类到当前选项卡和内容
+                    this.classList.add('active');
+                    const tabId = this.dataset.tab;
+                    document.getElementById(`${tabId}Tab`).classList.add('active');
+                });
+            });
+            
+            // 关闭模态框
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.modal').style.display = 'none';
+                });
+            });
+            
+            // 点击模态框外部关闭
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.style.display = 'none';
+                    }
+                });
+            });
             
             // 添加搜索功能事件监听
             document.getElementById('searchBtn').addEventListener('click', function() {
@@ -943,7 +2636,92 @@
                 document.getElementById('userProfilePage').style.display = 'none';
             });
             
-            // 原有的其他事件监听...
+            // 处理表单提交
+            document.getElementById('linkForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    category: document.getElementById('category').value,
+                    title: document.getElementById('title').value,
+                    description: document.getElementById('description').value,
+                    url: document.getElementById('url').value,
+                    icon: document.getElementById('icon').value
+                };
+                
+                addLink(formData);
+                hideAddLinkForm();
+            });
+            
+            document.getElementById('userForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                if (document.getElementById('userModalTitle').textContent === '用户登录') {
+                    if (login(username, password)) {
+                        hideModal('userModal');
+                        alert('登录成功！');
+                    } else {
+                        alert('用户名或密码错误！');
+                    }
+                } else {
+                    const email = document.getElementById('email').value;
+                    const code = document.getElementById('code').value;
+                    
+                    if (register(username, password, email, code)) {
+                        hideModal('userModal');
+                        alert('注册成功！');
+                    }
+                }
+            });
+            
+            document.getElementById('passwordForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const oldPassword = document.getElementById('oldPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (newPassword !== confirmPassword) {
+                    alert('两次输入的新密码不一致');
+                    return;
+                }
+                
+                if (changePassword(oldPassword, newPassword)) {
+                    hideModal('passwordModal');
+                    alert('密码修改成功！');
+                }
+            });
+            
+            document.getElementById('blogForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    title: document.getElementById('blogTitle').value,
+                    content: document.getElementById('blogContent').value
+                };
+                
+                const editingId = this.dataset.editingId;
+                
+                if (editingId) {
+                    updateBlog(parseInt(editingId), formData);
+                } else {
+                    addBlog(formData);
+                }
+                
+                hideModal('blogModal');
+            });
+            
+            document.getElementById('saveSettings').addEventListener('click', function() {
+                const siteTitle = document.getElementById('siteTitle').value;
+                const siteDescription = document.getElementById('siteDescription').value;
+                
+                document.querySelector('h1').textContent = siteTitle;
+                document.querySelector('.description').textContent = siteDescription;
+                
+                alert('设置已保存！');
+            });
         });
     </script>
 </body>
