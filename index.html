@@ -5,7 +5,525 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>实用资源导航 - 一站式工具集合</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles/main.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f5f7fa;
+            --dark-bg: #2c3e50;
+            --text-color: #333;
+            --text-light: #777;
+            --border-color: #ddd;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        .dark-theme {
+            --light-bg: #2c3e50;
+            --dark-bg: #1a2530;
+            --text-color: #ecf0f1;
+            --text-light: #bdc3c7;
+            --border-color: #34495e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            transition: var(--transition);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        /* 头部样式 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .description {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .user-controls {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+        .edit-controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* 搜索栏样式 */
+        .search-container {
+            display: flex;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            box-shadow: var(--shadow);
+            border-radius: 30px;
+            overflow: hidden;
+        }
+
+        .search-box {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-btn {
+            padding: 0 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* 分类样式 */
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .category {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .category:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+        }
+
+        .category h2 {
+            font-size: 1.4rem;
+        }
+
+        .links {
+            list-style: none;
+        }
+
+        .link-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .link-item:hover {
+            background-color: #f9f9f9;
+            padding-left: 10px;
+        }
+
+        .link-item:last-child {
+            border-bottom: none;
+        }
+
+        .link-icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+
+        .link-content {
+            flex: 1;
+        }
+
+        .link-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .link-description {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .link-actions {
+            display: none;
+            gap: 5px;
+        }
+
+        .edit-mode .link-actions {
+            display: flex;
+        }
+
+        /* 个人中心样式 */
+        .profile-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: white;
+            z-index: 1000;
+            display: none;
+            overflow-y: auto;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-section.active {
+            display: block;
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .profile-title {
+            font-size: 1.5rem;
+        }
+
+        .profile-content {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        .profile-sidebar {
+            width: 250px;
+            background-color: #f5f7fa;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .profile-nav {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        .profile-nav li {
+            margin-bottom: 5px;
+        }
+
+        .profile-nav a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .profile-nav a:hover,
+        .profile-nav a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .profile-main {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .profile-tab {
+            display: none;
+        }
+
+        .profile-tab.active {
+            display: block;
+        }
+
+        .user-info-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f5f7fa;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            color: white;
+            font-size: 30px;
+        }
+
+        .user-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            background-color: #f5f7fa;
+            border-radius: 8px;
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            display: none;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        /* 主题切换 */
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .theme-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .categories {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-content {
+                flex-direction: column;
+            }
+            
+            .profile-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .profile-nav {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px 0;
+            }
+            
+            .profile-nav li {
+                margin-bottom: 0;
+                margin-right: 10px;
+            }
+            
+            .profile-nav a {
+                white-space: nowrap;
+            }
+            
+            .user-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .stat-card {
+                margin: 0;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -16,29 +534,14 @@
                 <i class="fas fa-search"></i>
             </button>
         </div>
-        
+
         <header>
             <div class="user-controls">
                 <button id="userBtn" class="btn btn-primary">
                     <i class="fas fa-user"></i> 登录/注册
                 </button>
-                <div id="userMenu" style="display: none;">
-                    <span id="userName"></span>
-                    <button id="profileBtn" class="btn btn-primary">
-                        <i class="fas fa-user-cog"></i> 个人中心
-                    </button>
-                    <button id="changePasswordBtn" class="btn btn-warning">
-                        <i class="fas fa-key"></i> 修改密码
-                    </button>
-                    <button id="logoutBtn" class="btn btn-danger">
-                        <i class="fas fa-sign-out-alt"></i> 退出
-                    </button>
-                    <button id="adminPanelBtn" class="btn btn-primary" style="display: none;">
-                        <i class="fas fa-cog"></i> 管理面板
-                    </button>
-                </div>
             </div>
-            <h1>实用资源导航</h1>
+            <h1>实用资源</h1>
             <p class="description">精心挑选的实用网站与工具，提高工作效率与生活质量</p>
             <div class="edit-controls">
                 <button id="toggleEdit" class="btn btn-primary">
@@ -47,12 +550,9 @@
                 <button id="addLink" class="btn btn-success" style="display: none;">
                     <i class="fas fa-plus"></i> 添加链接
                 </button>
-                <button id="resetData" class="btn btn-danger" style="display: none;">
-                    <i class="fas fa-redo"></i> 重置数据
-                </button>
             </div>
         </header>
-        
+
         <!-- 个人中心区域 -->
         <div id="profileSection" class="profile-section">
             <div class="profile-header">
@@ -65,9 +565,14 @@
                 <div class="profile-sidebar">
                     <ul class="profile-nav">
                         <li><a href="#profile-info" class="active" data-tab="info">个人信息</a></li>
-                        <li><a href="#profile-blogs" data-tab="blogs">我的博客</a></li>
-                        <li><a href="#profile-links" data-tab="links">我的链接</a></li>
+                        <li><a href="#profile-favorites" data-tab="favorites">我的收藏</a></li>
+                        <li><a href="#profile-messages" data-tab="messages">留言历史</a></li>
+                        <li><a href="#profile-history" data-tab="history">阅读历史</a></li>
                         <li><a href="#profile-settings" data-tab="settings">账户设置</a></li>
+                        <li><a href="#profile-blacklist" data-tab="blacklist">黑名单管理</a></li>
+                        <li><a href="#profile-block" data-tab="block">标签与内容屏蔽</a></li>
+                        <li><a href="#profile-password" data-tab="password">修改密码</a></li>
+                        <li><a href="#profile-logout" data-tab="logout">退出登录</a></li>
                     </ul>
                 </div>
                 <div class="profile-main">
@@ -78,7 +583,7 @@
                             </div>
                             <h3 id="profileUserName">用户名</h3>
                             <p id="profileUserEmail">邮箱</p>
-                            <p id="profileUserRole">角色</p>
+                            <p id="profileUserRole">普通用户</p>
                         </div>
                         <div class="user-stats">
                             <div class="stat-card">
@@ -95,24 +600,37 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <div id="blogsTab" class="profile-tab">
-                        <h3>我的博客</h3>
-                        <button id="addBlogBtnProfile" class="btn btn-success" style="margin-bottom: 15px;">
-                            <i class="fas fa-plus"></i> 写博客
-                        </button>
-                        <ul class="my-blogs-list" id="myBlogsList">
-                            <!-- 我的博客列表将通过JavaScript动态加载 -->
+
+                    <div id="favoritesTab" class="profile-tab">
+                        <h3>我的收藏</h3>
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="搜索收藏内容...">
+                        </div>
+                        <ul class="links" id="favoritesList">
+                            <!-- 收藏内容将通过JavaScript动态加载 -->
                         </ul>
                     </div>
-                    
-                    <div id="linksTab" class="profile-tab">
-                        <h3>我添加的链接</h3>
-                        <ul class="my-blogs-list" id="myLinksList">
-                            <!-- 我的链接列表将通过JavaScript动态加载 -->
+
+                    <div id="messagesTab" class="profile-tab">
+                        <h3>留言历史</h3>
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="搜索留言...">
+                        </div>
+                        <div id="messagesList">
+                            <!-- 留言历史将通过JavaScript动态加载 -->
+                        </div>
+                    </div>
+
+                    <div id="historyTab" class="profile-tab">
+                        <h3>阅读历史</h3>
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="搜索阅读历史...">
+                        </div>
+                        <ul class="links" id="historyList">
+                            <!-- 阅读历史将通过JavaScript动态加载 -->
                         </ul>
                     </div>
-                    
+
                     <div id="settingsTab" class="profile-tab">
                         <h3>账户设置</h3>
                         <form id="profileSettingsForm">
@@ -133,84 +651,61 @@
                             </div>
                         </form>
                     </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 用户个人主页 -->
-        <div id="userProfilePage" class="profile-section" style="display: none;">
-            <div class="profile-header">
-                <h2 class="profile-title" id="userProfileTitle">用户主页</h2>
-                <button id="closeUserProfile" class="btn btn-danger">
-                    <i class="fas fa-times"></i> 关闭
-                </button>
-            </div>
-            <div class="user-profile-card">
-                <div class="user-profile-avatar">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h3 id="viewingUserName">用户名</h3>
-                <p id="viewingUserRole">角色</p>
-                <p id="viewingUserJoinDate">加入日期</p>
-                
-                <div class="user-profile-stats">
-                    <div class="user-profile-stat">
-                        <div class="user-profile-stat-value" id="viewingUserBlogsCount">0</div>
-                        <div class="user-profile-stat-label">发布的博客</div>
+
+                    <div id="blacklistTab" class="profile-tab">
+                        <h3>黑名单管理</h3>
+                        <p>管理您不想看到的用户或内容</p>
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="搜索黑名单...">
+                        </div>
+                        <div id="blacklistContent">
+                            <!-- 黑名单内容将通过JavaScript动态加载 -->
+                        </div>
                     </div>
-                    <div class="user-profile-stat">
-                        <div class="user-profile-stat-value" id="viewingUserLinksCount">0</div>
-                        <div class="user-profile-stat-label">添加的链接</div>
+
+                    <div id="blockTab" class="profile-tab">
+                        <h3>标签与内容屏蔽</h3>
+                        <p>自定义您不想看到的内容类型</p>
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="添加要屏蔽的标签...">
+                        </div>
+                        <div id="blockedTags">
+                            <!-- 屏蔽的标签将通过JavaScript动态加载 -->
+                        </div>
                     </div>
-                    <div class="user-profile-stat">
-                        <div class="user-profile-stat-value" id="viewingUserLikesCount">0</div>
-                        <div class="user-profile-stat-label">收到的点赞</div>
+
+                    <div id="passwordTab" class="profile-tab">
+                        <h3>修改密码</h3>
+                        <form id="passwordForm">
+                            <div class="form-group">
+                                <label for="oldPassword">当前密码</label>
+                                <input type="password" id="oldPassword" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="newPassword">新密码</label>
+                                <input type="password" id="newPassword" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword">确认新密码</label>
+                                <input type="password" id="confirmPassword" class="form-control" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-success">修改密码</button>
+                            </div>
+                        </form>
                     </div>
-                </div>
-                
-                <div class="user-profile-actions">
-                    <button id="followUserBtn" class="btn btn-primary" style="display: none;">
-                        <i class="fas fa-plus"></i> 关注
-                    </button>
-                    <button id="messageUserBtn" class="btn btn-success" style="display: none;">
-                        <i class="fas fa-envelope"></i> 私信
-                    </button>
-                </div>
-            </div>
-            
-            <div class="profile-content">
-                <div class="profile-sidebar">
-                    <ul class="profile-nav">
-                        <li><a href="#user-blogs" class="active" data-tab="userBlogs">用户博客</a></li>
-                        <li><a href="#user-links" data-tab="userLinks">用户链接</a></li>
-                        <li><a href="#user-favorites" data-tab="userFavorites">用户收藏</a></li>
-                    </ul>
-                </div>
-                <div class="profile-main">
-                    <div id="userBlogsTab" class="profile-tab active">
-                        <h3>用户博客</h3>
-                        <ul class="my-blogs-list" id="userBlogsList">
-                            <!-- 用户博客列表将通过JavaScript动态加载 -->
-                        </ul>
-                    </div>
-                    
-                    <div id="userLinksTab" class="profile-tab">
-                        <h3>用户链接</h3>
-                        <ul class="my-blogs-list" id="userLinksList">
-                            <!-- 用户链接列表将通过JavaScript动态加载 -->
-                        </ul>
-                    </div>
-                    
-                    <div id="userFavoritesTab" class="profile-tab">
-                        <h3>用户收藏</h3>
-                        <ul class="my-blogs-list" id="userFavoritesList">
-                            <!-- 用户收藏列表将通过JavaScript动态加载 -->
-                        </ul>
+
+                    <div id="logoutTab" class="profile-tab">
+                        <h3>退出登录</h3>
+                        <p>确定要退出当前账号吗？</p>
+                        <div class="form-actions">
+                            <button id="confirmLogout" class="btn btn-danger">确定退出</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- 用户登录/注册模态框 -->
         <div id="userModal" class="modal">
             <div class="modal-content">
@@ -218,175 +713,75 @@
                     <h3 class="modal-title" id="userModalTitle">用户登录</h3>
                     <button class="close-modal">&times;</button>
                 </div>
-                <form id="userForm">
-                    <div class="form-group">
-                        <label for="username">用户名</label>
-                        <input type="text" id="username" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">密码</label>
-                        <input type="password" id="password" class="form-control" required>
-                    </div>
-                    <div class="form-group" id="emailGroup" style="display: none;">
-                        <label for="email">邮箱</label>
-                        <input type="email" id="email" class="form-control">
-                    </div>
-                    <div class="form-group" id="codeGroup" style="display: none;">
-                        <label for="code">验证码</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="code" class="form-control">
-                            <button type="button" id="sendCode" class="btn btn-primary">发送验证码</button>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <div class="form-group">
+                            <label for="username">用户名</label>
+                            <input type="text" id="username" class="form-control" required>
                         </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" id="switchMode" class="btn btn-warning">切换到注册</button>
-                        <button type="submit" class="btn btn-success">登录</button>
-                    </div>
-                </form>
+                        <div class="form-group">
+                            <label for="password">密码</label>
+                            <input type="password" id="password" class="form-control" required>
+                        </div>
+                        <div class="form-group" id="emailGroup" style="display: none;">
+                            <label for="email">邮箱</label>
+                            <input type="email" id="email" class="form-control">
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" id="switchMode" class="btn btn-warning">切换到注册</button>
+                            <button type="submit" class="btn btn-success">登录</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-        
-        <!-- 修改密码模态框 -->
-        <div id="passwordModal" class="modal">
+
+        <!-- 添加链接模态框 -->
+        <div id="addLinkModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3 class="modal-title">修改密码</h3>
+                    <h3 class="modal-title">添加新链接</h3>
                     <button class="close-modal">&times;</button>
                 </div>
-                <form id="passwordForm">
-                    <div class="form-group">
-                        <label for="oldPassword">当前密码</label>
-                        <input type="password" id="oldPassword" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="newPassword">新密码</label>
-                        <input type="password" id="newPassword" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmPassword">确认新密码</label>
-                        <input type="password" id="confirmPassword" class="form-control" required>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-danger close-modal">取消</button>
-                        <button type="submit" class="btn btn-success">修改密码</button>
-                    </div>
-                </form>
+                <div class="modal-body">
+                    <form id="linkForm">
+                        <div class="form-group">
+                            <label for="category">分类</label>
+                            <select id="category" class="form-control" required>
+                                <option value="tools">工具</option>
+                                <option value="ai">AI</option>
+                                <option value="video">视频</option>
+                                <option value="games">游戏</option>
+                                <option value="proxy">代理</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="title">标题</label>
+                            <input type="text" id="title" class="form-control" placeholder="例如: GitHub" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">描述</label>
+                            <input type="text" id="description" class="form-control" placeholder="例如: 全球最大的代码托管平台" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="url">URL</label>
+                            <input type="url" id="url" class="form-control" placeholder="例如: https://github.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="icon">图标类名</label>
+                            <input type="text" id="icon" class="form-control" placeholder="例如: fab fa-github" required>
+                            <small>请使用Font Awesome图标类名，例如: fab fa-github, fas fa-tools</small>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-danger close-modal">取消</button>
+                            <button type="submit" class="btn btn-success">添加</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-        
-        <!-- 管理员面板 -->
-        <div id="adminPanel" class="admin-panel">
-            <div class="admin-tabs">
-                <div class="admin-tab active" data-tab="users">用户管理</div>
-                <div class="admin-tab" data-tab="blogs">博客管理</div>
-                <div class="admin-tab" data-tab="settings">系统设置</div>
-            </div>
-            
-            <div id="usersTab" class="admin-content active">
-                <h3>用户管理</h3>
-                <ul class="user-list" id="userList">
-                    <!-- 用户列表将通过JavaScript动态加载 -->
-                </ul>
-            </div>
-            
-            <div id="blogsTab" class="admin-content">
-                <h3>博客管理</h3>
-                <button id="addBlogBtn" class="btn btn-success" style="margin-bottom: 15px;">
-                    <i class="fas fa-plus"></i> 添加博客
-                </button>
-                <ul class="blog-list-admin" id="blogListAdmin">
-                    <!-- 博客列表将通过JavaScript动态加载 -->
-                </ul>
-            </div>
-            
-            <div id="settingsTab" class="admin-content">
-                <h3>系统设置</h3>
-                <div class="form-group">
-                    <label for="siteTitle">网站标题</label>
-                    <input type="text" id="siteTitle" class="form-control" value="实用资源导航">
-                </div>
-                <div class="form-group">
-                    <label for="siteDescription">网站描述</label>
-                    <input type="text" id="siteDescription" class="form-control" value="精心挑选的实用网站与工具，提高工作效率与生活质量">
-                </div>
-                <button id="saveSettings" class="btn btn-success">保存设置</button>
-            </div>
-        </div>
-        
-        <!-- 博客区域 -->
-        <div class="blog-section">
-            <div class="blog-header">
-                <h2 class="blog-title">最新博客</h2>
-                <button id="addBlogBtnUser" class="btn btn-success" style="display: none;">
-                    <i class="fas fa-plus"></i> 写博客
-                </button>
-            </div>
-            <div class="blog-list" id="blogList">
-                <!-- 博客内容将通过JavaScript动态加载 -->
-            </div>
-        </div>
-        
-        <!-- 添加博客模态框 -->
-        <div id="blogModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title" id="blogModalTitle">添加博客</h3>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <form id="blogForm">
-                    <div class="form-group">
-                        <label for="blogTitle">标题</label>
-                        <input type="text" id="blogTitle" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="blogContent">内容</label>
-                        <textarea id="blogContent" class="form-control" rows="10" required></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-danger close-modal">取消</button>
-                        <button type="submit" class="btn btn-success">发布</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        
-        <div id="addLinkForm" class="add-link-form">
-            <h3>添加新链接</h3>
-            <form id="linkForm">
-                <div class="form-group">
-                    <label for="category">分类</label>
-                    <select id="category" class="form-control" required>
-                        <option value="tools">工具</option>
-                        <option value="ai">AI</option>
-                        <option value="video">视频</option>
-                        <option value="games">游戏</option>
-                        <option value="proxy">代理</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="title">标题</label>
-                    <input type="text" id="title" class="form-control" placeholder="例如: GitHub" required>
-                </div>
-                <div class="form-group">
-                    <label for="description">描述</label>
-                    <input type="text" id="description" class="form-control" placeholder="例如: 全球最大的代码托管平台" required>
-                </div>
-                <div class="form-group">
-                    <label for="url">URL</label>
-                    <input type="url" id="url" class="form-control" placeholder="例如: https://github.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="icon">图标类名</label>
-                    <input type="text" id="icon" class="form-control" placeholder="例如: fab fa-github" required>
-                    <small>请使用Font Awesome图标类名，例如: fab fa-github, fas fa-tools</small>
-                </div>
-                <div class="form-actions">
-                    <button type="button" id="cancelAdd" class="btn btn-danger">取消</button>
-                    <button type="submit" class="btn btn-success">添加</button>
-                </div>
-            </form>
-        </div>
-        
+
+        <!-- 资源分类 -->
         <div class="categories">
             <!-- 工具分类 -->
             <div class="category tools" data-category="tools">
@@ -398,7 +793,7 @@
                     <!-- 链接将通过JavaScript动态加载 -->
                 </ul>
             </div>
-            
+
             <!-- AI分类 -->
             <div class="category ai" data-category="ai">
                 <div class="category-title">
@@ -409,7 +804,7 @@
                     <!-- 链接将通过JavaScript动态加载 -->
                 </ul>
             </div>
-            
+
             <!-- 视频分类 -->
             <div class="category video" data-category="video">
                 <div class="category-title">
@@ -420,7 +815,7 @@
                     <!-- 链接将通过JavaScript动态加载 -->
                 </ul>
             </div>
-            
+
             <!-- 游戏分类 -->
             <div class="category games" data-category="games">
                 <div class="category-title">
@@ -431,7 +826,7 @@
                     <!-- 链接将通过JavaScript动态加载 -->
                 </ul>
             </div>
-            
+
             <!-- 代理分类 -->
             <div class="category proxy" data-category="proxy">
                 <div class="category-title">
@@ -444,7 +839,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- 主题切换按钮 -->
     <div class="theme-toggle">
         <button class="theme-btn" id="themeToggle">
@@ -452,12 +847,420 @@
         </button>
     </div>
 
-    <!-- 引入JavaScript文件 -->
-<script src="js/data.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/app.js"></script>
+    <script>
+        // 示例数据
+        const sampleLinks = {
+            tools: [
+                { title: "GitHub", description: "全球最大的代码托管平台", url: "https://github.com", icon: "fab fa-github" },
+                { title: "Stack Overflow", description: "程序员问答社区", url: "https://stackoverflow.com", icon: "fab fa-stack-overflow" },
+                { title: "CodePen", description: "前端代码在线编辑与展示", url: "https://codepen.io", icon: "fab fa-codepen" }
+            ],
+            ai: [
+                { title: "ChatGPT", description: "OpenAI的对话AI", url: "https://chat.openai.com", icon: "fas fa-robot" },
+                { title: "Midjourney", description: "AI图像生成工具", url: "https://midjourney.com", icon: "fas fa-palette" },
+                { title: "Hugging Face", description: "AI模型分享平台", url: "https://huggingface.co", icon: "fas fa-brain" }
+            ],
+            video: [
+                { title: "YouTube", description: "全球最大的视频分享平台", url: "https://youtube.com", icon: "fab fa-youtube" },
+                { title: "Bilibili", description: "国内知名视频弹幕网站", url: "https://bilibili.com", icon: "fas fa-play-circle" },
+                { title: "Netflix", description: "全球流媒体服务平台", url: "https://netflix.com", icon: "fas fa-film" }
+            ],
+            games: [
+                { title: "Steam", description: "全球最大的游戏平台", url: "https://store.steampowered.com", icon: "fab fa-steam" },
+                { title: "Epic Games", description: "知名游戏发行平台", url: "https://epicgames.com", icon: "fas fa-gamepad" },
+                { title: "NVIDIA GeForce Now", description: "云游戏服务平台", url: "https://nvidia.com/geforce-now", icon: "fas fa-cloud" }
+            ],
+            proxy: [
+                { title: "Clash", description: "规则驱动的代理客户端", url: "https://github.com/Dreamacro/clash", icon: "fas fa-shield-alt" },
+                { title: "V2Ray", description: "网络代理工具", url: "https://v2ray.com", icon: "fas fa-network-wired" },
+                { title: "Shadowsocks", description: "轻量级代理工具", url: "https://shadowsocks.org", icon: "fas fa-user-secret" }
+            ]
+        };
+
+        // 管理员账户
+        const adminAccount = {
+            username: "waduck",
+            password: "w1847236328",
+            role: "admin"
+        };
+
+        // 当前用户状态
+        let currentUser = null;
+        let isEditMode = false;
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 加载链接数据
+            loadLinks();
+            
+            // 初始化事件监听器
+            initEventListeners();
+        });
+
+        // 加载链接数据
+        function loadLinks() {
+            for (const category in sampleLinks) {
+                const linksContainer = document.getElementById(`${category}-links`);
+                if (linksContainer) {
+                    sampleLinks[category].forEach((link, index) => {
+                        const linkItem = document.createElement('li');
+                        linkItem.className = 'link-item';
+                        linkItem.setAttribute('data-category', category);
+                        linkItem.setAttribute('data-index', index);
+                        linkItem.innerHTML = `
+                            <div class="link-icon">
+                                <i class="${link.icon}"></i>
+                            </div>
+                            <div class="link-content">
+                                <div class="link-title">${link.title}</div>
+                                <div class="link-description">${link.description}</div>
+                            </div>
+                            <div class="link-actions">
+                                <button class="btn btn-danger btn-sm delete-link">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                        linkItem.addEventListener('click', (e) => {
+                            // 防止点击删除按钮时触发链接跳转
+                            if (!e.target.closest('.link-actions')) {
+                                window.open(link.url, '_blank');
+                            }
+                        });
+                        linksContainer.appendChild(linkItem);
+                    });
+                }
+            }
+        }
+
+        // 初始化事件监听器
+        function initEventListeners() {
+            // 主题切换
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // 用户按钮
+            document.getElementById('userBtn').addEventListener('click', showUserModal);
+            
+            // 关闭个人中心
+            document.getElementById('closeProfile').addEventListener('click', hideProfile);
+            
+            // 切换登录/注册模式
+            document.getElementById('switchMode').addEventListener('click', switchUserMode);
+            
+            // 关闭模态框
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.modal').classList.remove('active');
+                });
+            });
+            
+            // 编辑模式切换
+            document.getElementById('toggleEdit').addEventListener('click', toggleEditMode);
+            
+            // 添加链接按钮
+            document.getElementById('addLink').addEventListener('click', showAddLinkModal);
+            
+            // 个人中心标签切换
+            document.querySelectorAll('.profile-nav a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 更新活动标签
+                    document.querySelectorAll('.profile-nav a').forEach(a => a.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 显示对应标签页
+                    const tabId = this.getAttribute('data-tab');
+                    document.querySelectorAll('.profile-tab').forEach(tab => tab.classList.remove('active'));
+                    document.getElementById(`${tabId}Tab`).classList.add('active');
+                });
+            });
+            
+            // 表单提交
+            document.getElementById('userForm').addEventListener('submit', handleUserFormSubmit);
+            document.getElementById('passwordForm').addEventListener('submit', handlePasswordFormSubmit);
+            document.getElementById('linkForm').addEventListener('submit', handleLinkFormSubmit);
+            document.getElementById('profileSettingsForm').addEventListener('submit', handleProfileSettingsSubmit);
+            
+            // 退出登录
+            document.getElementById('confirmLogout').addEventListener('click', handleLogout);
+            
+            // 删除链接事件委托
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.delete-link')) {
+                    const linkItem = e.target.closest('.link-item');
+                    const category = linkItem.getAttribute('data-category');
+                    const index = parseInt(linkItem.getAttribute('data-index'));
+                    
+                    if (confirm('确定要删除这个链接吗？')) {
+                        linkItem.remove();
+                        sampleLinks[category].splice(index, 1);
+                        // 重新加载链接以更新索引
+                        reloadLinks();
+                    }
+                }
+            });
+        }
+
+        // 重新加载链接
+        function reloadLinks() {
+            for (const category in sampleLinks) {
+                const linksContainer = document.getElementById(`${category}-links`);
+                if (linksContainer) {
+                    linksContainer.innerHTML = '';
+                    sampleLinks[category].forEach((link, index) => {
+                        const linkItem = document.createElement('li');
+                        linkItem.className = 'link-item';
+                        linkItem.setAttribute('data-category', category);
+                        linkItem.setAttribute('data-index', index);
+                        linkItem.innerHTML = `
+                            <div class="link-icon">
+                                <i class="${link.icon}"></i>
+                            </div>
+                            <div class="link-content">
+                                <div class="link-title">${link.title}</div>
+                                <div class="link-description">${link.description}</div>
+                            </div>
+                            <div class="link-actions">
+                                <button class="btn btn-danger btn-sm delete-link">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                        linkItem.addEventListener('click', (e) => {
+                            // 防止点击删除按钮时触发链接跳转
+                            if (!e.target.closest('.link-actions')) {
+                                window.open(link.url, '_blank');
+                            }
+                        });
+                        linksContainer.appendChild(linkItem);
+                    });
+                }
+            }
+        }
+
+        // 主题切换
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const icon = document.querySelector('#themeToggle i');
+            if (document.body.classList.contains('dark-theme')) {
+                icon.className = 'fas fa-sun';
+            } else {
+                icon.className = 'fas fa-moon';
+            }
+        }
+
+        // 显示用户模态框
+        function showUserModal() {
+            if (currentUser) {
+                // 如果已登录，直接显示个人中心
+                showProfile();
+            } else {
+                document.getElementById('userModal').classList.add('active');
+            }
+        }
+
+        // 显示个人中心
+        function showProfile() {
+            document.getElementById('profileSection').classList.add('active');
+            
+            if (currentUser) {
+                // 更新用户信息
+                document.getElementById('profileUserName').textContent = currentUser.username;
+                document.getElementById('profileUserEmail').textContent = currentUser.email || '未设置邮箱';
+                document.getElementById('profileUserRole').textContent = currentUser.role === 'admin' ? '管理员' : '普通用户';
+                document.getElementById('profileUsername').value = currentUser.username;
+                document.getElementById('profileEmail').value = currentUser.email || '';
+                document.getElementById('profileJoinDate').value = currentUser.joinDate || '2023-05-15';
+                
+                // 更新统计数据
+                document.getElementById('blogsCount').textContent = currentUser.blogsCount || '0';
+                document.getElementById('linksCount').textContent = currentUser.linksCount || '0';
+                document.getElementById('joinDays').textContent = currentUser.joinDays || '245';
+                
+                // 更新用户按钮
+                document.getElementById('userBtn').innerHTML = `<i class="fas fa-user"></i> ${currentUser.username}`;
+            }
+        }
+
+        // 隐藏个人中心
+        function hideProfile() {
+            document.getElementById('profileSection').classList.remove('active');
+        }
+
+        // 切换用户模式（登录/注册）
+        function switchUserMode() {
+            const title = document.getElementById('userModalTitle');
+            const switchBtn = document.getElementById('switchMode');
+            const submitBtn = document.querySelector('#userForm button[type="submit"]');
+            const emailGroup = document.getElementById('emailGroup');
+            
+            if (title.textContent === '用户登录') {
+                title.textContent = '用户注册';
+                switchBtn.textContent = '切换到登录';
+                submitBtn.textContent = '注册';
+                emailGroup.style.display = 'block';
+            } else {
+                title.textContent = '用户登录';
+                switchBtn.textContent = '切换到注册';
+                submitBtn.textContent = '登录';
+                emailGroup.style.display = 'none';
+            }
+        }
+
+        // 切换编辑模式
+        function toggleEditMode() {
+            const editBtn = document.getElementById('toggleEdit');
+            const addLinkBtn = document.getElementById('addLink');
+            
+            if (!currentUser) {
+                alert('请先登录！');
+                return;
+            }
+            
+            if (currentUser.role !== 'admin') {
+                alert('只有管理员可以进入编辑模式！');
+                return;
+            }
+            
+            isEditMode = !isEditMode;
+            
+            if (isEditMode) {
+                document.body.classList.add('edit-mode');
+                addLinkBtn.style.display = 'inline-flex';
+                editBtn.innerHTML = '<i class="fas fa-times"></i> 退出编辑';
+                editBtn.classList.add('btn-danger');
+                editBtn.classList.remove('btn-primary');
+            } else {
+                document.body.classList.remove('edit-mode');
+                addLinkBtn.style.display = 'none';
+                editBtn.innerHTML = '<i class="fas fa-edit"></i> 编辑模式';
+                editBtn.classList.remove('btn-danger');
+                editBtn.classList.add('btn-primary');
+            }
+        }
+
+        // 显示添加链接模态框
+        function showAddLinkModal() {
+            document.getElementById('addLinkModal').classList.add('active');
+        }
+
+        // 处理用户表单提交
+        function handleUserFormSubmit(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            const isLoginMode = document.getElementById('userModalTitle').textContent === '用户登录';
+            
+            if (isLoginMode) {
+                // 登录逻辑
+                if (username === adminAccount.username && password === adminAccount.password) {
+                    currentUser = {
+                        username: adminAccount.username,
+                        role: adminAccount.role,
+                        email: 'admin@example.com',
+                        joinDate: '2023-01-01',
+                        blogsCount: '11',
+                        linksCount: '5',
+                        joinDays: '245'
+                    };
+                    alert('管理员登录成功！');
+                    document.getElementById('userModal').classList.remove('active');
+                    showProfile();
+                } else {
+                    alert('用户名或密码错误！');
+                }
+            } else {
+                // 注册逻辑
+                currentUser = {
+                    username: username,
+                    role: 'user',
+                    email: email,
+                    joinDate: new Date().toISOString().split('T')[0],
+                    blogsCount: '0',
+                    linksCount: '0',
+                    joinDays: '1'
+                };
+                alert('注册成功！');
+                document.getElementById('userModal').classList.remove('active');
+                showProfile();
+            }
+            
+            // 重置表单
+            document.getElementById('userForm').reset();
+        }
+
+        // 处理密码表单提交
+        function handlePasswordFormSubmit(e) {
+            e.preventDefault();
+            const oldPassword = document.getElementById('oldPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                alert('新密码与确认密码不匹配！');
+                return;
+            }
+            
+            alert('密码修改成功！');
+            document.getElementById('passwordForm').reset();
+        }
+
+        // 处理链接表单提交
+        function handleLinkFormSubmit(e) {
+            e.preventDefault();
+            const category = document.getElementById('category').value;
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const url = document.getElementById('url').value;
+            const icon = document.getElementById('icon').value;
+            
+            // 添加到对应分类
+            if (!sampleLinks[category]) {
+                sampleLinks[category] = [];
+            }
+            
+            sampleLinks[category].push({
+                title,
+                description,
+                url,
+                icon
+            });
+            
+            // 重新加载链接
+            reloadLinks();
+            
+            document.getElementById('addLinkModal').classList.remove('active');
+            document.getElementById('linkForm').reset();
+            
+            alert('链接添加成功！');
+        }
+
+        // 处理个人设置表单提交
+        function handleProfileSettingsSubmit(e) {
+            e.preventDefault();
+            if (currentUser) {
+                currentUser.email = document.getElementById('profileEmail').value;
+                alert('设置保存成功！');
+            }
+        }
+
+        // 处理退出登录
+        function handleLogout() {
+            if (confirm('确定要退出登录吗？')) {
+                currentUser = null;
+                isEditMode = false;
+                document.body.classList.remove('edit-mode');
+                document.getElementById('toggleEdit').innerHTML = '<i class="fas fa-edit"></i> 编辑模式';
+                document.getElementById('toggleEdit').classList.remove('btn-danger');
+                document.getElementById('toggleEdit').classList.add('btn-primary');
+                document.getElementById('addLink').style.display = 'none';
+                document.getElementById('userBtn').innerHTML = '<i class="fas fa-user"></i> 登录/注册';
+                hideProfile();
+                alert('已成功退出登录！');
+            }
+        }
+    </script>
 </body>
 </html>
-
