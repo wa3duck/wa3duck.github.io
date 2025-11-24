@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updateUserProfile(currentUser.username, { email: newEmail });
             
             alert('设置已保存！');
-            renderProfile();
+            updateProfileInfo();
         }
     });
     
