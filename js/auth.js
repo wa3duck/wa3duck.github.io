@@ -25,6 +25,7 @@ function login(username, password) {
         setCurrentUser(user);
         return true;
     }
+    alert('用户名或密码错误');
     return false;
 }
 
@@ -57,8 +58,18 @@ function register(username, password, email, code) {
     users.push(newUser);
     saveUsers(users);
     
-    getUserProfile(username);
-    updateUserProfile(username, { email: email });
+    // 创建用户个人资料
+    const userProfile = {
+        joinDate: new Date().toISOString().split('T')[0],
+        addedLinks: [],
+        email: email
+    };
+    
+    // 保存用户资料
+    const savedProfiles = localStorage.getItem('userProfiles');
+    const profiles = savedProfiles ? JSON.parse(savedProfiles) : {};
+    profiles[username] = userProfile;
+    localStorage.setItem('userProfiles', JSON.stringify(profiles));
     
     setCurrentUser(newUser);
     return true;
@@ -66,7 +77,10 @@ function register(username, password, email, code) {
 
 function changePassword(oldPassword, newPassword) {
     const currentUser = getCurrentUser();
-    if (!currentUser) return false;
+    if (!currentUser) {
+        alert('请先登录');
+        return false;
+    }
     
     const users = getUsers();
     const userIndex = users.findIndex(u => u.username === currentUser.username);
@@ -84,9 +98,11 @@ function changePassword(oldPassword, newPassword) {
     currentUser.password = newPassword;
     setCurrentUser(currentUser);
     
+    alert('密码修改成功');
     return true;
 }
 
 function logout() {
     setCurrentUser(null);
+    alert('已退出登录');
 }
