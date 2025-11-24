@@ -1,20 +1,20 @@
 // js/utils.js
 // 扩展默认数据
 function extendDefaultData() {
-    if (!localStorage.getItem('linkLikes')) {
-        localStorage.setItem('linkLikes', JSON.stringify({}));
+    if (!localStorage.getItem("linkLikes")) {
+        localStorage.setItem("linkLikes", JSON.stringify({}));
     }
     
-    if (!localStorage.getItem('linkRatings')) {
-        localStorage.setItem('linkRatings', JSON.stringify({}));
+    if (!localStorage.getItem("linkRatings")) {
+        localStorage.setItem("linkRatings", JSON.stringify({}));
     }
     
-    if (!localStorage.getItem('userFollows')) {
-        localStorage.setItem('userFollows', JSON.stringify({}));
+    if (!localStorage.getItem("userFollows")) {
+        localStorage.setItem("userFollows", JSON.stringify({}));
     }
     
-    if (!localStorage.getItem('userFavorites')) {
-        localStorage.setItem('userFavorites', JSON.stringify({}));
+    if (!localStorage.getItem("userFavorites")) {
+        localStorage.setItem("userFavorites", JSON.stringify({}));
     }
 }
 
@@ -32,7 +32,7 @@ function likeLink(category, index) {
     }
     
     const linkId = getLinkId(category, index);
-    const likes = JSON.parse(localStorage.getItem('linkLikes'));
+    const likes = JSON.parse(localStorage.getItem("linkLikes"));
     
     if (!likes[linkId]) {
         likes[linkId] = [];
@@ -46,13 +46,13 @@ function likeLink(category, index) {
         likes[linkId].splice(userIndex, 1);
     }
     
-    localStorage.setItem('linkLikes', JSON.stringify(likes));
+    localStorage.setItem("linkLikes", JSON.stringify(likes));
     renderLinks();
 }
 
 function getLinkLikes(category, index) {
     const linkId = getLinkId(category, index);
-    const likes = JSON.parse(localStorage.getItem('linkLikes'));
+    const likes = JSON.parse(localStorage.getItem("linkLikes"));
     return likes[linkId] ? likes[linkId].length : 0;
 }
 
@@ -61,7 +61,7 @@ function hasUserLiked(category, index) {
     if (!currentUser) return false;
     
     const linkId = getLinkId(category, index);
-    const likes = JSON.parse(localStorage.getItem('linkLikes'));
+    const likes = JSON.parse(localStorage.getItem("linkLikes"));
     
     return likes[linkId] && likes[linkId].includes(currentUser.username);
 }
@@ -75,20 +75,20 @@ function rateLink(category, index, rating) {
     }
     
     const linkId = getLinkId(category, index);
-    const ratings = JSON.parse(localStorage.getItem('linkRatings'));
+    const ratings = JSON.parse(localStorage.getItem("linkRatings"));
     
     if (!ratings[linkId]) {
         ratings[linkId] = {};
     }
     
     ratings[linkId][currentUser.username] = rating;
-    localStorage.setItem('linkRatings', JSON.stringify(ratings));
+    localStorage.setItem("linkRatings", JSON.stringify(ratings));
     renderLinks();
 }
 
 function getLinkRating(category, index) {
     const linkId = getLinkId(category, index);
-    const ratings = JSON.parse(localStorage.getItem('linkRatings'));
+    const ratings = JSON.parse(localStorage.getItem("linkRatings"));
     
     if (!ratings[linkId]) return 0;
     
@@ -104,7 +104,7 @@ function getUserRating(category, index) {
     if (!currentUser) return 0;
     
     const linkId = getLinkId(category, index);
-    const ratings = JSON.parse(localStorage.getItem('linkRatings'));
+    const ratings = JSON.parse(localStorage.getItem("linkRatings"));
     
     return ratings[linkId] && ratings[linkId][currentUser.username] || 0;
 }
@@ -293,4 +293,23 @@ function deleteBlog(blogId) {
         saveBlogs(blogs);
         renderBlogs();
     }
+}
+
+// 数据重置功能
+function resetData() {
+    if (!confirm('确定要重置所有数据吗？此操作不可逆！')) return;
+    
+    localStorage.removeItem('navLinks');
+    localStorage.removeItem('navBlogs');
+    localStorage.removeItem('navUsers');
+    localStorage.removeItem('linkLikes');
+    localStorage.removeItem('linkRatings');
+    localStorage.removeItem('userProfiles');
+    
+    // 重新初始化数据
+    extendDefaultData();
+    
+    renderLinks();
+    renderBlogs();
+    alert('数据重置成功！');
 }
