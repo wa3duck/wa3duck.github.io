@@ -199,3 +199,98 @@ function performSearch(query) {
         });
     }
 }
+
+// 链接管理功能
+function deleteLink(category, index) {
+    if (!confirm('确定要删除这个链接吗？')) return;
+    
+    const links = getLinks();
+    if (links[category] && links[category][index]) {
+        links[category].splice(index, 1);
+        saveLinks(links);
+        renderLinks();
+    }
+}
+
+function addLink(category, title, desc, url, icon) {
+    const links = getLinks();
+    
+    if (!links[category]) {
+        links[category] = [];
+    }
+    
+    const newLink = {
+        title,
+        desc,
+        url,
+        icon,
+        addedBy: getCurrentUser() ? getCurrentUser().username : '匿名用户'
+    };
+    
+    links[category].push(newLink);
+    saveLinks(links);
+    renderLinks();
+    hideAddLinkForm();
+}
+
+// 博客管理功能
+function addBlog(title, content) {
+    const blogs = getBlogs();
+    const currentUser = getCurrentUser();
+    
+    const newBlog = {
+        id: Date.now(),
+        title,
+        content,
+        author: currentUser ? currentUser.username : '匿名用户',
+        date: new Date().toISOString().split('T')[0]
+    };
+    
+    blogs.push(newBlog);
+    saveBlogs(blogs);
+    renderBlogs();
+    hideModal('addBlogModal');
+}
+
+function editBlog(blogId) {
+    const blogs = getBlogs();
+    const blog = blogs.find(b => b.id === blogId);
+    
+    if (!blog) return;
+    
+    document.getElementById('editBlogTitle').value = blog.title;
+    document.getElementById('editBlogContent').value = blog.content;
+    document.getElementById('editBlogId').value = blogId;
+    
+    showModal('editBlogModal');
+}
+
+function updateBlog() {
+    const blogId = parseInt(document.getElementById('editBlogId').value);
+    const title = document.getElementById('editBlogTitle').value;
+    const content = document.getElementById('editBlogContent').value;
+    
+    const blogs = getBlogs();
+    const blogIndex = blogs.findIndex(b => b.id === blogId);
+    
+    if (blogIndex !== -1) {
+        blogs[blogIndex].title = title;
+        blogs[blogIndex].content = content;
+        saveBlogs(blogs);
+        renderBlogs();
+        hideModal('editBlogModal');
+    }
+}
+
+function deleteBlog(blogId) {
+    if (!confirm('确定要删除这篇博客吗？')) return;
+    
+    const blogs = getBlogs();
+    const blogIndex = blogs.findIndex(b => b.id === blogId);
+    
+    if (blogIndex !== -1) {
+        blogs.splice(blogIndex, 1);
+        saveBlogs(blogs);
+        renderBlogs();
+    }
+}
