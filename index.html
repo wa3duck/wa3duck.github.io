@@ -483,6 +483,51 @@
             font-size: 1.2rem;
         }
 
+        /* 登录提示信息样式 */
+        .login-message {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        /* 用户管理样式 */
+        .user-list {
+            margin-top: 20px;
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 5px;
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .categories {
@@ -569,6 +614,7 @@
                         <li><a href="#profile-messages" data-tab="messages">留言历史</a></li>
                         <li><a href="#profile-history" data-tab="history">阅读历史</a></li>
                         <li><a href="#profile-settings" data-tab="settings">账户设置</a></li>
+                        <li><a href="#profile-user-management" data-tab="user-management" id="userManagementTab" style="display: none;">用户管理</a></li>
                         <li><a href="#profile-blacklist" data-tab="blacklist">黑名单管理</a></li>
                         <li><a href="#profile-block" data-tab="block">标签与内容屏蔽</a></li>
                         <li><a href="#profile-password" data-tab="password">修改密码</a></li>
@@ -652,6 +698,17 @@
                         </form>
                     </div>
 
+                    <div id="userManagementTab" class="profile-tab">
+                        <h3>用户管理</h3>
+                        <p>管理员可以在此管理所有用户</p>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="userSearch" placeholder="搜索用户...">
+                        </div>
+                        <div class="user-list" id="userList">
+                            <!-- 用户列表将通过JavaScript动态加载 -->
+                        </div>
+                    </div>
+
                     <div id="blacklistTab" class="profile-tab">
                         <h3>黑名单管理</h3>
                         <p>管理您不想看到的用户或内容</p>
@@ -727,6 +784,7 @@
                             <label for="email">邮箱</label>
                             <input type="email" id="email" class="form-control">
                         </div>
+                        <div class="login-message" id="loginMessage"></div>
                         <div class="form-actions">
                             <button type="button" id="switchMode" class="btn btn-warning">切换到注册</button>
                             <button type="submit" class="btn btn-success">登录</button>
@@ -888,8 +946,22 @@
         let currentUser = null;
         let isEditMode = false;
 
+        // 用户数据存储
+        let usersData = JSON.parse(localStorage.getItem('usersData')) || {};
+        let userLinks = JSON.parse(localStorage.getItem('userLinks')) || {};
+        
+        // 记忆功能 - 保存当前登录用户
+        let rememberedUser = JSON.parse(localStorage.getItem('rememberedUser'));
+
         // 初始化页面
         document.addEventListener('DOMContentLoaded', function() {
+            // 检查是否有记忆的登录用户
+            if (rememberedUser) {
+                currentUser = rememberedUser;
+                updateUIForLoggedInUser();
+                reloadLinks();
+            }
+            
             // 加载链接数据
             loadLinks();
             
@@ -897,12 +969,31 @@
             initEventListeners();
         });
 
+        // 更新UI为已登录状态
+        function updateUIForLoggedInUser() {
+            if (currentUser) {
+                document.getElementById('userBtn').innerHTML = `<i class="fas fa-user"></i> ${currentUser.username}`;
+                
+                // 如果是管理员，显示用户管理标签
+                if (currentUser.role === 'admin') {
+                    document.getElementById('userManagementTab').style.display = 'block';
+                }
+            }
+        }
+
         // 加载链接数据
         function loadLinks() {
             for (const category in sampleLinks) {
                 const linksContainer = document.getElementById(`${category}-links`);
                 if (linksContainer) {
-                    sampleLinks[category].forEach((link, index) => {
+                    // 如果有用户登录且该用户有自定义链接，则使用用户自定义链接
+                    const userCategoryLinks = currentUser && userLinks[currentUser.username] ? 
+                        userLinks[currentUser.username][category] : null;
+                    
+                    const linksToShow = userCategoryLinks || sampleLinks[category];
+                    
+                    linksContainer.innerHTML = '';
+                    linksToShow.forEach((link, index) => {
                         const linkItem = document.createElement('li');
                         linkItem.className = 'link-item';
                         linkItem.setAttribute('data-category', category);
@@ -973,6 +1064,11 @@
                     const tabId = this.getAttribute('data-tab');
                     document.querySelectorAll('.profile-tab').forEach(tab => tab.classList.remove('active'));
                     document.getElementById(`${tabId}Tab`).classList.add('active');
+                    
+                    // 如果是用户管理标签，加载用户列表
+                    if (tabId === 'user-management') {
+                        loadUserList();
+                    }
                 });
             });
             
@@ -994,11 +1090,28 @@
                     
                     if (confirm('确定要删除这个链接吗？')) {
                         linkItem.remove();
-                        sampleLinks[category].splice(index, 1);
+                        
+                        // 如果有用户登录，则更新用户的链接数据
+                        if (currentUser) {
+                            if (!userLinks[currentUser.username]) {
+                                userLinks[currentUser.username] = {};
+                            }
+                            if (!userLinks[currentUser.username][category]) {
+                                userLinks[currentUser.username][category] = [...sampleLinks[category]];
+                            }
+                            userLinks[currentUser.username][category].splice(index, 1);
+                            localStorage.setItem('userLinks', JSON.stringify(userLinks));
+                        }
+                        
                         // 重新加载链接以更新索引
                         reloadLinks();
                     }
                 }
+            });
+
+            // 用户搜索
+            document.getElementById('userSearch').addEventListener('input', function() {
+                filterUserList(this.value);
             });
         }
 
@@ -1007,8 +1120,14 @@
             for (const category in sampleLinks) {
                 const linksContainer = document.getElementById(`${category}-links`);
                 if (linksContainer) {
+                    // 如果有用户登录且该用户有自定义链接，则使用用户自定义链接
+                    const userCategoryLinks = currentUser && userLinks[currentUser.username] ? 
+                        userLinks[currentUser.username][category] : null;
+                    
+                    const linksToShow = userCategoryLinks || sampleLinks[category];
+                    
                     linksContainer.innerHTML = '';
-                    sampleLinks[category].forEach((link, index) => {
+                    linksToShow.forEach((link, index) => {
                         const linkItem = document.createElement('li');
                         linkItem.className = 'link-item';
                         linkItem.setAttribute('data-category', category);
@@ -1045,8 +1164,10 @@
             const icon = document.querySelector('#themeToggle i');
             if (document.body.classList.contains('dark-theme')) {
                 icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
             } else {
                 icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
             }
         }
 
@@ -1057,6 +1178,8 @@
                 showProfile();
             } else {
                 document.getElementById('userModal').classList.add('active');
+                // 清空登录消息
+                document.getElementById('loginMessage').textContent = '';
             }
         }
 
@@ -1080,6 +1203,13 @@
                 
                 // 更新用户按钮
                 document.getElementById('userBtn').innerHTML = `<i class="fas fa-user"></i> ${currentUser.username}`;
+                
+                // 如果是管理员，显示用户管理标签
+                if (currentUser.role === 'admin') {
+                    document.getElementById('userManagementTab').style.display = 'block';
+                } else {
+                    document.getElementById('userManagementTab').style.display = 'none';
+                }
             }
         }
 
@@ -1094,6 +1224,9 @@
             const switchBtn = document.getElementById('switchMode');
             const submitBtn = document.querySelector('#userForm button[type="submit"]');
             const emailGroup = document.getElementById('emailGroup');
+            
+            // 清空登录消息
+            document.getElementById('loginMessage').textContent = '';
             
             if (title.textContent === '用户登录') {
                 title.textContent = '用户注册';
@@ -1115,11 +1248,6 @@
             
             if (!currentUser) {
                 alert('请先登录！');
-                return;
-            }
-            
-            if (currentUser.role !== 'admin') {
-                alert('只有管理员可以进入编辑模式！');
                 return;
             }
             
@@ -1152,6 +1280,7 @@
             const password = document.getElementById('password').value;
             const email = document.getElementById('email').value;
             const isLoginMode = document.getElementById('userModalTitle').textContent === '用户登录';
+            const loginMessage = document.getElementById('loginMessage');
             
             if (isLoginMode) {
                 // 登录逻辑
@@ -1165,26 +1294,81 @@
                         linksCount: '5',
                         joinDays: '245'
                     };
-                    alert('管理员登录成功！');
-                    document.getElementById('userModal').classList.remove('active');
-                    showProfile();
+                    
+                    // 记忆登录状态
+                    localStorage.setItem('rememberedUser', JSON.stringify(currentUser));
+                    
+                    loginMessage.textContent = '管理员登录成功！';
+                    loginMessage.style.color = '#2ecc71'; // 成功时显示绿色
+                    setTimeout(() => {
+                        document.getElementById('userModal').classList.remove('active');
+                        updateUIForLoggedInUser();
+                        showProfile();
+                        reloadLinks();
+                    }, 1000);
+                } else if (usersData[username] && usersData[username].password === password) {
+                    currentUser = {
+                        username: username,
+                        role: 'user',
+                        email: usersData[username].email,
+                        joinDate: usersData[username].joinDate,
+                        blogsCount: usersData[username].blogsCount || '0',
+                        linksCount: usersData[username].linksCount || '0',
+                        joinDays: usersData[username].joinDays || '1'
+                    };
+                    
+                    // 记忆登录状态
+                    localStorage.setItem('rememberedUser', JSON.stringify(currentUser));
+                    
+                    loginMessage.textContent = '登录成功！';
+                    loginMessage.style.color = '#2ecc71'; // 成功时显示绿色
+                    setTimeout(() => {
+                        document.getElementById('userModal').classList.remove('active');
+                        updateUIForLoggedInUser();
+                        showProfile();
+                        reloadLinks();
+                    }, 1000);
                 } else {
-                    alert('用户名或密码错误！');
+                    loginMessage.textContent = '用户名或密码错误！';
+                    loginMessage.style.color = '#e74c3c'; // 失败时显示红色
                 }
             } else {
                 // 注册逻辑
-                currentUser = {
-                    username: username,
-                    role: 'user',
-                    email: email,
-                    joinDate: new Date().toISOString().split('T')[0],
-                    blogsCount: '0',
-                    linksCount: '0',
-                    joinDays: '1'
-                };
-                alert('注册成功！');
-                document.getElementById('userModal').classList.remove('active');
-                showProfile();
+                if (usersData[username]) {
+                    loginMessage.textContent = '用户名已存在！';
+                    loginMessage.style.color = '#e74c3c';
+                } else {
+                    usersData[username] = {
+                        password: password,
+                        email: email,
+                        joinDate: new Date().toISOString().split('T')[0],
+                        blogsCount: '0',
+                        linksCount: '0',
+                        joinDays: '1'
+                    };
+                    localStorage.setItem('usersData', JSON.stringify(usersData));
+                    
+                    currentUser = {
+                        username: username,
+                        role: 'user',
+                        email: email,
+                        joinDate: new Date().toISOString().split('T')[0],
+                        blogsCount: '0',
+                        linksCount: '0',
+                        joinDays: '1'
+                    };
+                    
+                    // 记忆登录状态
+                    localStorage.setItem('rememberedUser', JSON.stringify(currentUser));
+                    
+                    loginMessage.textContent = '注册成功！';
+                    loginMessage.style.color = '#2ecc71';
+                    setTimeout(() => {
+                        document.getElementById('userModal').classList.remove('active');
+                        updateUIForLoggedInUser();
+                        showProfile();
+                    }, 1000);
+                }
             }
             
             // 重置表单
@@ -1216,17 +1400,24 @@
             const url = document.getElementById('url').value;
             const icon = document.getElementById('icon').value;
             
-            // 添加到对应分类
-            if (!sampleLinks[category]) {
-                sampleLinks[category] = [];
+            // 如果有用户登录，则添加到用户的链接数据
+            if (currentUser) {
+                if (!userLinks[currentUser.username]) {
+                    userLinks[currentUser.username] = {};
+                }
+                if (!userLinks[currentUser.username][category]) {
+                    userLinks[currentUser.username][category] = [...sampleLinks[category]];
+                }
+                
+                userLinks[currentUser.username][category].push({
+                    title,
+                    description,
+                    url,
+                    icon
+                });
+                
+                localStorage.setItem('userLinks', JSON.stringify(userLinks));
             }
-            
-            sampleLinks[category].push({
-                title,
-                description,
-                url,
-                icon
-            });
             
             // 重新加载链接
             reloadLinks();
@@ -1242,6 +1433,13 @@
             e.preventDefault();
             if (currentUser) {
                 currentUser.email = document.getElementById('profileEmail').value;
+                // 更新存储的用户数据
+                if (usersData[currentUser.username]) {
+                    usersData[currentUser.username].email = currentUser.email;
+                    localStorage.setItem('usersData', JSON.stringify(usersData));
+                }
+                // 更新记忆的用户数据
+                localStorage.setItem('rememberedUser', JSON.stringify(currentUser));
                 alert('设置保存成功！');
             }
         }
@@ -1257,9 +1455,89 @@
                 document.getElementById('toggleEdit').classList.add('btn-primary');
                 document.getElementById('addLink').style.display = 'none';
                 document.getElementById('userBtn').innerHTML = '<i class="fas fa-user"></i> 登录/注册';
+                
+                // 清除记忆的登录状态
+                localStorage.removeItem('rememberedUser');
+                
                 hideProfile();
+                reloadLinks(); // 重新加载默认链接
                 alert('已成功退出登录！');
             }
+        }
+
+        // 加载用户列表（管理员功能）
+        function loadUserList() {
+            const userListContainer = document.getElementById('userList');
+            userListContainer.innerHTML = '';
+            
+            // 添加管理员账户
+            const adminItem = document.createElement('div');
+            adminItem.className = 'user-item';
+            adminItem.innerHTML = `
+                <div class="user-info">
+                    <div class="user-name">${adminAccount.username}</div>
+                    <div class="user-role">管理员</div>
+                </div>
+                <div class="user-actions">
+                    <button class="btn btn-danger btn-sm" disabled>无法删除管理员</button>
+                </div>
+            `;
+            userListContainer.appendChild(adminItem);
+            
+            // 添加普通用户
+            for (const username in usersData) {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-name">${username}</div>
+                        <div class="user-role">普通用户</div>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-danger btn-sm delete-user" data-username="${username}">拉黑删除</button>
+                    </div>
+                `;
+                userListContainer.appendChild(userItem);
+            }
+            
+            // 添加删除用户事件监听
+            document.querySelectorAll('.delete-user').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const username = this.getAttribute('data-username');
+                    if (confirm(`确定要拉黑删除用户 "${username}" 吗？此操作不可撤销。`)) {
+                        delete usersData[username];
+                        localStorage.setItem('usersData', JSON.stringify(usersData));
+                        
+                        // 如果删除的是当前登录用户，则退出登录
+                        if (currentUser && currentUser.username === username) {
+                            handleLogout();
+                        }
+                        
+                        loadUserList(); // 重新加载用户列表
+                        alert(`用户 "${username}" 已被成功删除！`);
+                    }
+                });
+            });
+        }
+
+        // 过滤用户列表
+        function filterUserList(searchTerm) {
+            const userItems = document.querySelectorAll('.user-item');
+            userItems.forEach(item => {
+                const userName = item.querySelector('.user-name').textContent.toLowerCase();
+                if (userName.includes(searchTerm.toLowerCase())) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // 页面加载时检查主题设置
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            document.querySelector('#themeToggle i').className = 'fas fa-sun';
         }
     </script>
 </body>
