@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>实用资源导航 - 一站式工具集合</title>
+    <title>实用资源导航 - 一站式工具集合与网盘</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -528,6 +528,79 @@
             gap: 5px;
         }
 
+        /* 网盘样式 */
+        .storage-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .storage-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .storage-item:last-child {
+            border-bottom: none;
+        }
+
+        .storage-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 20px;
+            color: var(--primary-color);
+        }
+
+        .storage-content {
+            flex: 1;
+        }
+
+        .storage-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .storage-meta {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            display: flex;
+            gap: 15px;
+        }
+
+        .storage-actions {
+            display: none;
+            gap: 5px;
+        }
+
+        .edit-mode .storage-actions {
+            display: flex;
+        }
+
+        .storage-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .storage-empty i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--border-color);
+        }
+
+        /* 文件类型颜色 */
+        .file-type-folder { color: #f39c12; }
+        .file-type-image { color: #e74c3c; }
+        .file-type-document { color: #3498db; }
+        .file-type-audio { color: #9b59b6; }
+        .file-type-video { color: #e67e22; }
+        .file-type-other { color: #95a5a6; }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .categories {
@@ -613,6 +686,7 @@
                         <li><a href="#profile-favorites" data-tab="favorites">我的收藏</a></li>
                         <li><a href="#profile-messages" data-tab="messages">留言历史</a></li>
                         <li><a href="#profile-history" data-tab="history">阅读历史</a></li>
+                        <li><a href="#profile-storage" data-tab="storage">我的网盘</a></li>
                         <li><a href="#profile-settings" data-tab="settings">账户设置</a></li>
                         <li><a href="#profile-user-management" data-tab="user-management" id="userManagementTab" style="display: none;">用户管理</a></li>
                         <li><a href="#profile-blacklist" data-tab="blacklist">黑名单管理</a></li>
@@ -675,6 +749,30 @@
                         <ul class="links" id="historyList">
                             <!-- 阅读历史将通过JavaScript动态加载 -->
                         </ul>
+                    </div>
+
+                    <div id="storageTab" class="profile-tab">
+                        <h3>我的网盘</h3>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="storageSearch" placeholder="搜索文件...">
+                        </div>
+                        <div class="storage-actions" style="margin-bottom: 20px;">
+                            <button id="uploadFileBtn" class="btn btn-success">
+                                <i class="fas fa-upload"></i> 上传文件
+                            </button>
+                            <button id="createFolderBtn" class="btn btn-primary">
+                                <i class="fas fa-folder-plus"></i> 新建文件夹
+                            </button>
+                        </div>
+                        <div class="storage-info" style="margin-bottom: 15px; color: var(--text-light); font-size: 0.9rem;">
+                            已使用: <span id="storageUsed">0 MB</span> / 总容量: <span id="storageTotal">100 MB</span>
+                            <div class="storage-progress" style="width: 100%; height: 8px; background-color: #f0f0f0; border-radius: 4px; margin-top: 5px;">
+                                <div id="storageProgressBar" style="height: 100%; background-color: var(--primary-color); border-radius: 4px; width: 0%;"></div>
+                            </div>
+                        </div>
+                        <div id="storageContent">
+                            <!-- 网盘文件列表将通过JavaScript动态加载 -->
+                        </div>
                     </div>
 
                     <div id="settingsTab" class="profile-tab">
@@ -811,6 +909,7 @@
                                 <option value="video">视频</option>
                                 <option value="games">游戏</option>
                                 <option value="proxy">代理</option>
+                                <option value="storage">网盘</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -833,6 +932,55 @@
                         <div class="form-actions">
                             <button type="button" class="btn btn-danger close-modal">取消</button>
                             <button type="submit" class="btn btn-success">添加</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 上传文件模态框 -->
+        <div id="uploadFileModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">上传文件</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadFileForm">
+                        <div class="form-group">
+                            <label for="fileInput">选择文件</label>
+                            <input type="file" id="fileInput" class="form-control" required>
+                            <small>最大文件大小: 10MB</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="fileDescription">文件描述</label>
+                            <input type="text" id="fileDescription" class="form-control" placeholder="输入文件描述...">
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-danger close-modal">取消</button>
+                            <button type="submit" class="btn btn-success">上传</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 新建文件夹模态框 -->
+        <div id="createFolderModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">新建文件夹</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="createFolderForm">
+                        <div class="form-group">
+                            <label for="folderName">文件夹名称</label>
+                            <input type="text" id="folderName" class="form-control" placeholder="输入文件夹名称..." required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-danger close-modal">取消</button>
+                            <button type="submit" class="btn btn-success">创建</button>
                         </div>
                     </form>
                 </div>
@@ -895,6 +1043,17 @@
                     <!-- 链接将通过JavaScript动态加载 -->
                 </ul>
             </div>
+
+            <!-- 网盘分类 -->
+            <div class="category storage" data-category="storage">
+                <div class="category-title">
+                    <div class="category-icon"><i class="fas fa-cloud"></i></div>
+                    <h2>我的网盘</h2>
+                </div>
+                <ul class="links" id="storage-links">
+                    <!-- 网盘文件将通过JavaScript动态加载 -->
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -932,6 +1091,11 @@
                 { title: "Clash", description: "规则驱动的代理客户端", url: "https://github.com/Dreamacro/clash", icon: "fas fa-shield-alt" },
                 { title: "V2Ray", description: "网络代理工具", url: "https://v2ray.com", icon: "fas fa-network-wired" },
                 { title: "Shadowsocks", description: "轻量级代理工具", url: "https://shadowsocks.org", icon: "fas fa-user-secret" }
+            ],
+            storage: [
+                { title: "我的文档", description: "文件夹", url: "#", icon: "fas fa-folder", type: "folder", size: "2.5 MB", date: "2023-10-15" },
+                { title: "项目计划", description: "PDF文档", url: "#", icon: "fas fa-file-pdf", type: "document", size: "1.2 MB", date: "2023-10-10" },
+                { title: "个人照片", description: "图片文件夹", url: "#", icon: "fas fa-folder", type: "folder", size: "15.8 MB", date: "2023-10-05" }
             ]
         };
 
@@ -949,6 +1113,7 @@
         // 用户数据存储
         let usersData = JSON.parse(localStorage.getItem('usersData')) || {};
         let userLinks = JSON.parse(localStorage.getItem('userLinks')) || {};
+        let userStorage = JSON.parse(localStorage.getItem('userStorage')) || {};
         
         // 记忆功能 - 保存当前登录用户
         let rememberedUser = JSON.parse(localStorage.getItem('rememberedUser'));
@@ -993,33 +1158,65 @@
                     const linksToShow = userCategoryLinks || sampleLinks[category];
                     
                     linksContainer.innerHTML = '';
-                    linksToShow.forEach((link, index) => {
-                        const linkItem = document.createElement('li');
-                        linkItem.className = 'link-item';
-                        linkItem.setAttribute('data-category', category);
-                        linkItem.setAttribute('data-index', index);
-                        linkItem.innerHTML = `
+                    
+                    // 特殊处理网盘分类
+                    if (category === 'storage') {
+                        const storageLink = document.createElement('li');
+                        storageLink.className = 'link-item';
+                        storageLink.innerHTML = `
                             <div class="link-icon">
-                                <i class="${link.icon}"></i>
+                                <i class="fas fa-cloud"></i>
                             </div>
                             <div class="link-content">
-                                <div class="link-title">${link.title}</div>
-                                <div class="link-description">${link.description}</div>
-                            </div>
-                            <div class="link-actions">
-                                <button class="btn btn-danger btn-sm delete-link">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                <div class="link-title">我的网盘</div>
+                                <div class="link-description">个人文件存储空间</div>
                             </div>
                         `;
-                        linkItem.addEventListener('click', (e) => {
-                            // 防止点击删除按钮时触发链接跳转
-                            if (!e.target.closest('.link-actions')) {
-                                window.open(link.url, '_blank');
+                        storageLink.addEventListener('click', function() {
+                            if (currentUser) {
+                                showProfile();
+                                // 切换到网盘标签
+                                document.querySelectorAll('.profile-nav a').forEach(a => a.classList.remove('active'));
+                                document.querySelector('[data-tab="storage"]').classList.add('active');
+                                document.querySelectorAll('.profile-tab').forEach(tab => tab.classList.remove('active'));
+                                document.getElementById('storageTab').classList.add('active');
+                                loadStorageContent();
+                            } else {
+                                alert('请先登录使用网盘功能！');
+                                showUserModal();
                             }
                         });
-                        linksContainer.appendChild(linkItem);
-                    });
+                        linksContainer.appendChild(storageLink);
+                    } else {
+                        // 其他分类正常加载
+                        linksToShow.forEach((link, index) => {
+                            const linkItem = document.createElement('li');
+                            linkItem.className = 'link-item';
+                            linkItem.setAttribute('data-category', category);
+                            linkItem.setAttribute('data-index', index);
+                            linkItem.innerHTML = `
+                                <div class="link-icon">
+                                    <i class="${link.icon}"></i>
+                                </div>
+                                <div class="link-content">
+                                    <div class="link-title">${link.title}</div>
+                                    <div class="link-description">${link.description}</div>
+                                </div>
+                                <div class="link-actions">
+                                    <button class="btn btn-danger btn-sm delete-link">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `;
+                            linkItem.addEventListener('click', (e) => {
+                                // 防止点击删除按钮时触发链接跳转
+                                if (!e.target.closest('.link-actions')) {
+                                    window.open(link.url, '_blank');
+                                }
+                            });
+                            linksContainer.appendChild(linkItem);
+                        });
+                    }
                 }
             }
         }
@@ -1069,6 +1266,11 @@
                     if (tabId === 'user-management') {
                         loadUserList();
                     }
+                    
+                    // 如果是网盘标签，加载网盘内容
+                    if (tabId === 'storage') {
+                        loadStorageContent();
+                    }
                 });
             });
             
@@ -1077,9 +1279,20 @@
             document.getElementById('passwordForm').addEventListener('submit', handlePasswordFormSubmit);
             document.getElementById('linkForm').addEventListener('submit', handleLinkFormSubmit);
             document.getElementById('profileSettingsForm').addEventListener('submit', handleProfileSettingsSubmit);
+            document.getElementById('uploadFileForm').addEventListener('submit', handleFileUpload);
+            document.getElementById('createFolderForm').addEventListener('submit', handleCreateFolder);
             
             // 退出登录
             document.getElementById('confirmLogout').addEventListener('click', handleLogout);
+            
+            // 网盘相关事件
+            document.getElementById('uploadFileBtn').addEventListener('click', showUploadFileModal);
+            document.getElementById('createFolderBtn').addEventListener('click', showCreateFolderModal);
+            
+            // 网盘搜索
+            document.getElementById('storageSearch').addEventListener('input', function() {
+                filterStorageItems(this.value);
+            });
             
             // 删除链接事件委托
             document.addEventListener('click', function(e) {
@@ -1107,6 +1320,20 @@
                         reloadLinks();
                     }
                 }
+                
+                // 删除存储项目
+                if (e.target.closest('.delete-storage')) {
+                    const storageItem = e.target.closest('.storage-item');
+                    const index = parseInt(storageItem.getAttribute('data-index'));
+                    
+                    if (confirm('确定要删除这个项目吗？')) {
+                        if (currentUser && userStorage[currentUser.username]) {
+                            userStorage[currentUser.username].splice(index, 1);
+                            localStorage.setItem('userStorage', JSON.stringify(userStorage));
+                            loadStorageContent();
+                        }
+                    }
+                }
             });
 
             // 用户搜索
@@ -1127,33 +1354,65 @@
                     const linksToShow = userCategoryLinks || sampleLinks[category];
                     
                     linksContainer.innerHTML = '';
-                    linksToShow.forEach((link, index) => {
-                        const linkItem = document.createElement('li');
-                        linkItem.className = 'link-item';
-                        linkItem.setAttribute('data-category', category);
-                        linkItem.setAttribute('data-index', index);
-                        linkItem.innerHTML = `
+                    
+                    // 特殊处理网盘分类
+                    if (category === 'storage') {
+                        const storageLink = document.createElement('li');
+                        storageLink.className = 'link-item';
+                        storageLink.innerHTML = `
                             <div class="link-icon">
-                                <i class="${link.icon}"></i>
+                                <i class="fas fa-cloud"></i>
                             </div>
                             <div class="link-content">
-                                <div class="link-title">${link.title}</div>
-                                <div class="link-description">${link.description}</div>
-                            </div>
-                            <div class="link-actions">
-                                <button class="btn btn-danger btn-sm delete-link">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                <div class="link-title">我的网盘</div>
+                                <div class="link-description">个人文件存储空间</div>
                             </div>
                         `;
-                        linkItem.addEventListener('click', (e) => {
-                            // 防止点击删除按钮时触发链接跳转
-                            if (!e.target.closest('.link-actions')) {
-                                window.open(link.url, '_blank');
+                        storageLink.addEventListener('click', function() {
+                            if (currentUser) {
+                                showProfile();
+                                // 切换到网盘标签
+                                document.querySelectorAll('.profile-nav a').forEach(a => a.classList.remove('active'));
+                                document.querySelector('[data-tab="storage"]').classList.add('active');
+                                document.querySelectorAll('.profile-tab').forEach(tab => tab.classList.remove('active'));
+                                document.getElementById('storageTab').classList.add('active');
+                                loadStorageContent();
+                            } else {
+                                alert('请先登录使用网盘功能！');
+                                showUserModal();
                             }
                         });
-                        linksContainer.appendChild(linkItem);
-                    });
+                        linksContainer.appendChild(storageLink);
+                    } else {
+                        // 其他分类正常加载
+                        linksToShow.forEach((link, index) => {
+                            const linkItem = document.createElement('li');
+                            linkItem.className = 'link-item';
+                            linkItem.setAttribute('data-category', category);
+                            linkItem.setAttribute('data-index', index);
+                            linkItem.innerHTML = `
+                                <div class="link-icon">
+                                    <i class="${link.icon}"></i>
+                                </div>
+                                <div class="link-content">
+                                    <div class="link-title">${link.title}</div>
+                                    <div class="link-description">${link.description}</div>
+                                </div>
+                                <div class="link-actions">
+                                    <button class="btn btn-danger btn-sm delete-link">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `;
+                            linkItem.addEventListener('click', (e) => {
+                                // 防止点击删除按钮时触发链接跳转
+                                if (!e.target.closest('.link-actions')) {
+                                    window.open(link.url, '_blank');
+                                }
+                            });
+                            linksContainer.appendChild(linkItem);
+                        });
+                    }
                 }
             }
         }
@@ -1271,6 +1530,24 @@
         // 显示添加链接模态框
         function showAddLinkModal() {
             document.getElementById('addLinkModal').classList.add('active');
+        }
+
+        // 显示上传文件模态框
+        function showUploadFileModal() {
+            if (!currentUser) {
+                alert('请先登录！');
+                return;
+            }
+            document.getElementById('uploadFileModal').classList.add('active');
+        }
+
+        // 显示创建文件夹模态框
+        function showCreateFolderModal() {
+            if (!currentUser) {
+                alert('请先登录！');
+                return;
+            }
+            document.getElementById('createFolderModal').classList.add('active');
         }
 
         // 处理用户表单提交
@@ -1444,6 +1721,98 @@
             }
         }
 
+        // 处理文件上传
+        function handleFileUpload(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const description = document.getElementById('fileDescription').value;
+            
+            if (!fileInput.files[0]) {
+                alert('请选择文件！');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            
+            // 检查文件大小（10MB限制）
+            if (file.size > 10 * 1024 * 1024) {
+                alert('文件大小不能超过10MB！');
+                return;
+            }
+            
+            // 获取文件类型对应的图标
+            const fileType = getFileType(file.type);
+            const fileIcon = getFileIcon(fileType);
+            
+            // 创建文件项
+            const fileItem = {
+                title: file.name,
+                description: description || `文件 - ${fileType}`,
+                url: '#',
+                icon: fileIcon,
+                type: fileType,
+                size: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
+                date: new Date().toISOString().split('T')[0],
+                fileData: null // 在实际应用中，这里应该存储文件数据
+            };
+            
+            // 存储到用户网盘
+            if (!userStorage[currentUser.username]) {
+                userStorage[currentUser.username] = [];
+            }
+            
+            userStorage[currentUser.username].push(fileItem);
+            localStorage.setItem('userStorage', JSON.stringify(userStorage));
+            
+            // 重新加载网盘内容
+            loadStorageContent();
+            
+            document.getElementById('uploadFileModal').classList.remove('active');
+            document.getElementById('uploadFileForm').reset();
+            
+            alert('文件上传成功！');
+        }
+
+        // 处理创建文件夹
+        function handleCreateFolder(e) {
+            e.preventDefault();
+            
+            const folderName = document.getElementById('folderName').value;
+            
+            if (!folderName) {
+                alert('请输入文件夹名称！');
+                return;
+            }
+            
+            // 创建文件夹项
+            const folderItem = {
+                title: folderName,
+                description: '文件夹',
+                url: '#',
+                icon: 'fas fa-folder',
+                type: 'folder',
+                size: '0 MB',
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            // 存储到用户网盘
+            if (!userStorage[currentUser.username]) {
+                userStorage[currentUser.username] = [];
+            }
+            
+            userStorage[currentUser.username].push(folderItem);
+            localStorage.setItem('userStorage', JSON.stringify(userStorage));
+            
+            // 重新加载网盘内容
+            loadStorageContent();
+            
+            document.getElementById('createFolderModal').classList.remove('active');
+            document.getElementById('createFolderForm').reset();
+            
+            alert('文件夹创建成功！');
+        }
+
         // 处理退出登录
         function handleLogout() {
             if (confirm('确定要退出登录吗？')) {
@@ -1526,6 +1895,131 @@
             userItems.forEach(item => {
                 const userName = item.querySelector('.user-name').textContent.toLowerCase();
                 if (userName.includes(searchTerm.toLowerCase())) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // 加载网盘内容
+        function loadStorageContent() {
+            const storageContainer = document.getElementById('storageContent');
+            
+            if (!currentUser) {
+                storageContainer.innerHTML = '<div class="storage-empty"><i class="fas fa-cloud"></i><p>请登录后使用网盘功能</p></div>';
+                return;
+            }
+            
+            const userStorageData = userStorage[currentUser.username] || [];
+            
+            if (userStorageData.length === 0) {
+                storageContainer.innerHTML = '<div class="storage-empty"><i class="fas fa-cloud"></i><p>网盘为空，开始上传文件吧</p></div>';
+                updateStorageUsage();
+                return;
+            }
+            
+            storageContainer.innerHTML = '';
+            userStorageData.forEach((item, index) => {
+                const storageItem = document.createElement('div');
+                storageItem.className = 'storage-item';
+                storageItem.setAttribute('data-index', index);
+                
+                storageItem.innerHTML = `
+                    <div class="storage-icon file-type-${item.type}">
+                        <i class="${item.icon}"></i>
+                    </div>
+                    <div class="storage-content">
+                        <div class="storage-name">${item.title}</div>
+                        <div class="storage-meta">
+                            <span>${item.description}</span>
+                            <span>${item.size}</span>
+                            <span>${item.date}</span>
+                        </div>
+                    </div>
+                    <div class="storage-actions">
+                        <button class="btn btn-danger btn-sm delete-storage">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                // 添加点击事件
+                storageItem.addEventListener('click', (e) => {
+                    if (!e.target.closest('.storage-actions')) {
+                        if (item.type === 'folder') {
+                            alert(`打开文件夹: ${item.title}`);
+                            // 这里可以添加打开文件夹的逻辑
+                        } else {
+                            // 模拟文件下载
+                            alert(`下载文件: ${item.title}`);
+                        }
+                    }
+                });
+                
+                storageContainer.appendChild(storageItem);
+            });
+            
+            updateStorageUsage();
+        }
+
+        // 更新存储使用情况
+        function updateStorageUsage() {
+            if (!currentUser) return;
+            
+            const userStorageData = userStorage[currentUser.username] || [];
+            let totalSize = 0;
+            
+            // 计算已使用空间（这里简化处理，实际应该计算文件大小）
+            userStorageData.forEach(item => {
+                const sizeValue = parseFloat(item.size) || 0;
+                totalSize += sizeValue;
+            });
+            
+            const maxStorage = 100; // 100MB 总容量
+            const usagePercent = (totalSize / maxStorage) * 100;
+            
+            document.getElementById('storageUsed').textContent = totalSize.toFixed(1) + ' MB';
+            document.getElementById('storageTotal').textContent = maxStorage + ' MB';
+            document.getElementById('storageProgressBar').style.width = usagePercent + '%';
+            
+            // 根据使用率改变颜色
+            if (usagePercent > 90) {
+                document.getElementById('storageProgressBar').style.backgroundColor = 'var(--danger-color)';
+            } else if (usagePercent > 70) {
+                document.getElementById('storageProgressBar').style.backgroundColor = 'var(--warning-color)';
+            } else {
+                document.getElementById('storageProgressBar').style.backgroundColor = 'var(--primary-color)';
+            }
+        }
+
+        // 获取文件类型
+        function getFileType(mimeType) {
+            if (mimeType.startsWith('image/')) return 'image';
+            if (mimeType.startsWith('video/')) return 'video';
+            if (mimeType.startsWith('audio/')) return 'audio';
+            if (mimeType.includes('pdf') || mimeType.includes('document') || mimeType.includes('text')) return 'document';
+            return 'other';
+        }
+
+        // 获取文件图标
+        function getFileIcon(fileType) {
+            switch (fileType) {
+                case 'folder': return 'fas fa-folder';
+                case 'image': return 'fas fa-file-image';
+                case 'document': return 'fas fa-file-pdf';
+                case 'audio': return 'fas fa-file-audio';
+                case 'video': return 'fas fa-file-video';
+                default: return 'fas fa-file';
+            }
+        }
+
+        // 过滤存储项目
+        function filterStorageItems(searchTerm) {
+            const storageItems = document.querySelectorAll('.storage-item');
+            storageItems.forEach(item => {
+                const fileName = item.querySelector('.storage-name').textContent.toLowerCase();
+                if (fileName.includes(searchTerm.toLowerCase())) {
                     item.style.display = 'flex';
                 } else {
                     item.style.display = 'none';
