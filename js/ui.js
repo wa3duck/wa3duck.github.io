@@ -4,11 +4,11 @@ function renderUsers() {
     const users = getUsers();
     const userList = document.getElementById('userList');
     const currentUser = getCurrentUser();
-    
+
     if (!userList) return;
-    
+
     userList.innerHTML = '';
-    
+
     users.forEach((user, index) => {
         const userElement = document.createElement('li');
         userElement.className = 'user-item';
@@ -23,10 +23,10 @@ function renderUsers() {
             </div>
             <div class="user-actions">
                 ${currentUser && currentUser.isAdmin ? `
-                    <button class="btn btn-warning toggle-admin" data-index="${index}">
+                    <button class="btn btn-warning toggle-admin" onclick="toggleAdminStatus(${index})">
                         ${user.isAdmin ? '取消管理员' : '设为管理员'}
                     </button>
-                    <button class="btn btn-danger toggle-block" data-index="${index}">
+                    <button class="btn btn-danger toggle-block" onclick="toggleBlockStatus(${index})">
                         ${user.isBlocked ? '解封' : '封禁'}
                     </button>
                 ` : ''}
@@ -34,32 +34,17 @@ function renderUsers() {
         `;
         userList.appendChild(userElement);
     });
-    
-    // 绑定用户管理事件
-    document.querySelectorAll('.toggle-admin').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const index = parseInt(this.dataset.index);
-            toggleAdminStatus(index);
-        });
-    });
-    
-    document.querySelectorAll('.toggle-block').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const index = parseInt(this.dataset.index);
-            toggleBlockStatus(index);
-        });
-    });
 }
 
 function renderProfile() {
     const currentUser = getCurrentUser();
     if (!currentUser) return;
-    
+
     const profileContent = document.getElementById('profileContent');
     if (!profileContent) return;
-    
+
     const userProfile = getUserProfile(currentUser.username);
-    
+
     profileContent.innerHTML = `
         <div class="profile-info">
             <h3><i class="fas fa-user"></i> 个人信息</h3>
@@ -88,12 +73,12 @@ function hideChangePasswordForm() {
 function toggleAdminStatus(userIndex) {
     const users = getUsers();
     const currentUser = getCurrentUser();
-    
+
     if (!currentUser || !currentUser.isAdmin) {
         alert('没有权限执行此操作');
         return;
     }
-    
+
     users[userIndex].isAdmin = !users[userIndex].isAdmin;
     saveUsers(users);
     renderUsers();
@@ -102,19 +87,19 @@ function toggleAdminStatus(userIndex) {
 function toggleBlockStatus(userIndex) {
     const users = getUsers();
     const currentUser = getCurrentUser();
-    
+
     if (!currentUser || !currentUser.isAdmin) {
         alert('没有权限执行此操作');
         return;
     }
-    
+
     users[userIndex].isBlocked = !users[userIndex].isBlocked;
     saveUsers(users);
-    
+
     // 如果封禁的是当前用户，强制退出登录
     if (users[userIndex].username === currentUser.username && users[userIndex].isBlocked) {
         logout();
     }
-    
+
     renderUsers();
 }
