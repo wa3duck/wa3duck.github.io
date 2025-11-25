@@ -1,108 +1,151 @@
-// js/auth.js
-// 用户认证功能
-function getCurrentUser() {
-    return JSON.parse(localStorage.getItem('currentUser'));
-}
+// 认证相关功能
 
-function setCurrentUser(user) {
-    if (user) {
-        localStorage.setItem('currentUser', JSON.stringify(user));
-    } else {
-        localStorage.removeItem('currentUser');
-    }
-    updateUI();
-}
+// 当前用户状态
+let currentUser = null;
 
-function login(username, password) {
-    const users = getUsers();
-    const user = users.find(u => u.username === username && u.password === password);
+// 用户数据存储
+let usersData = getFromStorage('usersData') || {};
+let userLinks = getFromStorage('userLinks') || {};
+
+// 记忆功能 - 保存当前登录用户
+let rememberedUser = getFromStorage('rememberedUser');
+
+// 处理用户表单提交
+function handleUserFormSubmit(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const email = document.getElementById('email').value;
+    const isLoginMode = document.getElementById('userModalTitle').textContent === '用户登录';
+    const loginMessage = document.getElementById('loginMessage');
     
-    if (user) {
-        if (user.isBlocked) {
-            alert('该账号已被封禁，无法登录');
-            return false;
+    if (isLoginMode) {
+        // 登录逻辑
+        if (username === adminAccount.username && password === adminAccount.password) {
+            currentUser = {
+                username: adminAccount.username,
+                role: adminAccount.role,
+                email: 'admin@example.com',
+                joinDate: '2023-01-01',
+                blogsCount: '11',
+                linksCount: '5',
+                joinDays: '245'
+            };
+            
+            // 记忆登录状态
+            saveToStorage('rememberedUser', currentUser);
+            
+            loginMessage.textContent = '管理员登录成功！';
+            loginMessage.style.color = '#2ecc71'; // 成功时显示绿色
+            setTimeout(() => {
+                document.getElementById('userModal').classList.remove('active');
+                updateUIForLoggedInUser();
+                showProfile();
+            }, 1000);
+        } else if (usersData[username] && usersData[username].password === password) {
+            currentUser = {
+                username: username,
+                role: 'user',
+                email: usersData[username].email,
+                joinDate: usersData[username].joinDate,
+                blogsCount: usersData[username].blogsCount || '0',
+                linksCount: usersData[username].linksCount || '0',
+                joinDays: usersData[username].joinDays || '1'
+            };
+            
+            // 记忆登录状态
+            saveToStorage('rememberedUser', currentUser);
+            
+            loginMessage.textContent = '登录成功！';
+            loginMessage.style.color = '#2ecc71'; // 成功时显示绿色
+            setTimeout(() => {
+                document.getElementById('userModal').classList.remove('active');
+                updateUIForLoggedInUser();
+                showProfile();
+            }, 1000);
+        } else {
+            loginMessage.textContent = '用户名或密码错误！';
+            loginMessage.style.color = '#e74c3c'; // 失败时显示红色
         }
-        setCurrentUser(user);
-        return true;
+    } else {
+        // 注册逻辑
+        if (usersData[username]) {
+            loginMessage.textContent = '用户名已存在！';
+            loginMessage.style.color = '#e74c3c';
+        } else {
+            usersData[username] = {
+                password: password,
+                email: email,
+                joinDate: formatDate(new Date()),
+                blogsCount: '0',
+                linksCount: '0',
+                joinDays: '1'
+            };
+            saveToStorage('usersData', usersData);
+            
+            currentUser = {
+                username: username,
+                role: 'user',
+                email: email,
+                joinDate: formatDate(new Date()),
+                blogsCount: '0',
+                linksCount: '0',
+                joinDays: '1'
+            };
+            
+            // 记忆登录状态
+            saveToStorage('rememberedUser', currentUser);
+            
+            loginMessage.textContent = '注册成功！';
+            loginMessage.style.color = '#2ecc71';
+            setTimeout(() => {
+                document.getElementById('userModal').classList.remove('active');
+                updateUIForLoggedInUser();
+                showProfile();
+            }, 1000);
+        }
     }
-    alert('用户名或密码错误');
-    return false;
+    
+    // 重置表单
+    document.getElementById('userForm').reset();
 }
 
-function register(username, password, email, code) {
-    if (code !== "123456") {
-        alert('验证码错误');
-        return false;
+// 处理个人设置表单提交
+function handleProfileSettingsSubmit(e) {
+    e.preventDefault();
+    if (currentUser) {
+        currentUser.email = document.getElementById('profileEmail').value;
+        // 更新存储的用户数据
+        if (usersData[currentUser.username]) {
+            usersData[currentUser.username].email = currentUser.email;
+            saveToStorage('usersData', usersData);
+        }
+        // 更新记忆的用户数据
+        saveToStorage('rememberedUser', currentUser);
+        alert('设置保存成功！');
     }
-    
-    const users = getUsers();
-    
-    if (users.find(u => u.username === username)) {
-        alert('用户名已存在');
-        return false;
-    }
-    
-    if (users.find(u => u.email === email)) {
-        alert('邮箱已被注册');
-        return false;
-    }
-    
-    const newUser = {
-        username,
-        password,
-        email,
-        isAdmin: false,
-        isBlocked: false
-    };
-    
-    users.push(newUser);
-    saveUsers(users);
-    
-    // 创建用户个人资料
-    const userProfile = {
-        joinDate: new Date().toISOString().split('T')[0],
-        addedLinks: [],
-        email: email
-    };
-    
-    // 保存用户资料
-    const savedProfiles = localStorage.getItem('userProfiles');
-    const profiles = savedProfiles ? JSON.parse(savedProfiles) : {};
-    profiles[username] = userProfile;
-    localStorage.setItem('userProfiles', JSON.stringify(profiles));
-    
-    setCurrentUser(newUser);
-    return true;
 }
 
-function changePassword(oldPassword, newPassword) {
-    const currentUser = getCurrentUser();
-    if (!currentUser) {
-        alert('请先登录');
-        return false;
+// 处理退出登录
+function handleLogout() {
+    if (confirm('确定要退出登录吗？')) {
+        currentUser = null;
+        document.getElementById('userBtn').innerHTML = '<i class="fas fa-user"></i> 登录/注册';
+        
+        // 清除记忆的登录状态
+        localStorage.removeItem('rememberedUser');
+        
+        hideProfile();
+        alert('已成功退出登录！');
     }
-    
-    const users = getUsers();
-    const userIndex = users.findIndex(u => u.username === currentUser.username);
-    
-    if (userIndex === -1) return false;
-    
-    if (users[userIndex].password !== oldPassword) {
-        alert('当前密码错误');
-        return false;
-    }
-    
-    users[userIndex].password = newPassword;
-    saveUsers(users);
-    
-    currentUser.password = newPassword;
-    setCurrentUser(currentUser);
-    
-    alert('密码修改成功');
-    return true;
 }
 
-function logout() {
-    setCurrentUser(null);
-    alert('已退出登录');
+// 获取当前用户
+function getCurrentUser() {
+    return currentUser;
+}
+
+// 设置当前用户
+function setCurrentUser(user) {
+    currentUser = user;
 }
