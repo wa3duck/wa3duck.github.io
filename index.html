@@ -659,7 +659,7 @@
                     <i class="fas fa-user"></i> 登录/注册
                 </button>
             </div>
-            <h1>实用资源</h1>
+            <h1>实用资源导航</h1>
             <p class="description">精心挑选的实用网站与工具，提高工作效率与生活质量</p>
             <div class="edit-controls">
                 <button id="toggleEdit" class="btn btn-primary">
@@ -790,6 +790,38 @@
                                 <label for="profileJoinDate">注册日期</label>
                                 <input type="text" id="profileJoinDate" class="form-control" disabled>
                             </div>
+                            
+                            <!-- GitHub 配置部分 -->
+                            <div class="form-group" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                                <h4>GitHub 网盘配置</h4>
+                                <small style="color: var(--text-light);">配置 GitHub 仓库用于文件存储</small>
+                                
+                                <div class="form-group">
+                                    <label for="githubUsername">GitHub 用户名</label>
+                                    <input type="text" id="githubUsername" class="form-control" placeholder="输入您的 GitHub 用户名">
+                                </div>
+                                <div class="form-group">
+                                    <label for="githubRepo">仓库名称</label>
+                                    <input type="text" id="githubRepo" class="form-control" placeholder="例如: my-cloud-drive">
+                                </div>
+                                <div class="form-group">
+                                    <label for="githubToken">GitHub Token</label>
+                                    <input type="password" id="githubToken" class="form-control" placeholder="输入 GitHub Personal Access Token">
+                                    <small>
+                                        <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--primary-color);">
+                                            如何获取 Token？
+                                        </a>
+                                        (需要 repo 权限)
+                                    </small>
+                                </div>
+                                <div class="form-group">
+                                    <button type="button" id="testGithubConfig" class="btn btn-primary">
+                                        <i class="fas fa-plug"></i> 测试连接
+                                    </button>
+                                    <span id="githubStatus" style="margin-left: 10px;"></span>
+                                </div>
+                            </div>
+                            
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-success">保存设置</button>
                             </div>
@@ -1118,6 +1150,194 @@
         // 记忆功能 - 保存当前登录用户
         let rememberedUser = JSON.parse(localStorage.getItem('rememberedUser'));
 
+        // GitHub 网盘功能
+        class GitHubDrive {
+            constructor() {
+                this.baseURL = 'https://api.github.com';
+                this.config = null;
+            }
+
+            setConfig(config) {
+                this.config = config;
+            }
+
+            async testConnection() {
+                if (!this.validateConfig()) {
+                    return false;
+                }
+
+                try {
+                    const response = await fetch(
+                        `${this.baseURL}/repos/${this.config.username}/${this.config.repo}`,
+                        {
+                            headers: {
+                                'Authorization': `token ${this.config.token}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        }
+                    );
+
+                    return response.ok;
+                } catch (error) {
+                    console.error('GitHub 连接测试失败:', error);
+                    return false;
+                }
+            }
+
+            validateConfig() {
+                return this.config && 
+                       this.config.username && 
+                       this.config.repo && 
+                       this.config.token;
+            }
+
+            async getFiles(path = '') {
+                if (!this.validateConfig()) {
+                    throw new Error('GitHub 配置不完整');
+                }
+
+                try {
+                    const response = await fetch(
+                        `${this.baseURL}/repos/${this.config.username}/${this.config.repo}/contents/${path}`,
+                        {
+                            headers: {
+                                'Authorization': `token ${this.config.token}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error('获取文件列表失败');
+                    }
+
+                    const files = await response.json();
+                    return Array.isArray(files) ? files : [files];
+                } catch (error) {
+                    console.error('获取文件列表失败:', error);
+                    throw error;
+                }
+            }
+
+            async uploadFile(file, path = '') {
+                if (!this.validateConfig()) {
+                    throw new Error('GitHub 配置不完整');
+                }
+
+                // 检查文件大小 (GitHub 限制 25MB)
+                if (file.size > 25 * 1024 * 1024) {
+                    throw new Error('文件大小超过 25MB 限制');
+                }
+
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = async () => {
+                        try {
+                            const base64Content = reader.result.split(',')[1];
+                            const fileName = path ? `${path}/${file.name}` : file.name;
+
+                            const response = await fetch(
+                                `${this.baseURL}/repos/${this.config.username}/${this.config.repo}/contents/${fileName}`,
+                                {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Authorization': `token ${this.config.token}`,
+                                        'Accept': 'application/vnd.github.v3+json',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        message: `Upload ${file.name}`,
+                                        content: base64Content
+                                    })
+                                }
+                            );
+
+                            if (!response.ok) {
+                                const errorData = await response.json();
+                                throw new Error(errorData.message || '上传失败');
+                            }
+
+                            resolve(await response.json());
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                    reader.onerror = () => reject(new Error('文件读取失败'));
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            async createFolder(folderName, path = '') {
+                if (!this.validateConfig()) {
+                    throw new Error('GitHub 配置不完整');
+                }
+
+                const folderPath = path ? `${path}/${folderName}` : folderName;
+                
+                // 在 GitHub 中创建文件夹实际上是通过创建一个占位文件来实现的
+                const response = await fetch(
+                    `${this.baseURL}/repos/${this.config.username}/${this.config.repo}/contents/${folderPath}/.gitkeep`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${this.config.token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: `Create folder ${folderName}`,
+                            content: btoa('') // 空文件
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('创建文件夹失败');
+                }
+
+                return await response.json();
+            }
+
+            async deleteFile(filePath, sha) {
+                if (!this.validateConfig()) {
+                    throw new Error('GitHub 配置不完整');
+                }
+
+                const response = await fetch(
+                    `${this.baseURL}/repos/${this.config.username}/${this.config.repo}/contents/${filePath}`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `token ${this.config.token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: `Delete ${filePath}`,
+                            sha: sha
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('删除文件失败');
+                }
+
+                return await response.json();
+            }
+
+            getDownloadUrl(filePath) {
+                if (!this.validateConfig()) {
+                    throw new Error('GitHub 配置不完整');
+                }
+
+                return `https://raw.githubusercontent.com/${this.config.username}/${this.config.repo}/main/${filePath}`;
+            }
+        }
+
+        // 初始化 GitHub 网盘
+        const gitHubDrive = new GitHubDrive();
+
         // 初始化页面
         document.addEventListener('DOMContentLoaded', function() {
             // 检查是否有记忆的登录用户
@@ -1340,6 +1560,33 @@
             document.getElementById('userSearch').addEventListener('input', function() {
                 filterUserList(this.value);
             });
+
+            // 测试 GitHub 连接
+            document.getElementById('testGithubConfig').addEventListener('click', async function() {
+                const githubConfig = {
+                    username: document.getElementById('githubUsername').value,
+                    repo: document.getElementById('githubRepo').value,
+                    token: document.getElementById('githubToken').value
+                };
+                
+                if (!githubConfig.username || !githubConfig.repo || !githubConfig.token) {
+                    document.getElementById('githubStatus').innerHTML = '<span style="color: var(--danger-color);">请填写完整的 GitHub 配置</span>';
+                    return;
+                }
+                
+                gitHubDrive.setConfig(githubConfig);
+                
+                try {
+                    const isConnected = await gitHubDrive.testConnection();
+                    if (isConnected) {
+                        document.getElementById('githubStatus').innerHTML = '<span style="color: var(--success-color);">✓ 连接成功</span>';
+                    } else {
+                        document.getElementById('githubStatus').innerHTML = '<span style="color: var(--danger-color);">✗ 连接失败，请检查配置</span>';
+                    }
+                } catch (error) {
+                    document.getElementById('githubStatus').innerHTML = `<span style="color: var(--danger-color);">✗ 连接错误: ${error.message}</span>`;
+                }
+            });
         }
 
         // 重新加载链接
@@ -1454,6 +1701,13 @@
                 document.getElementById('profileUsername').value = currentUser.username;
                 document.getElementById('profileEmail').value = currentUser.email || '';
                 document.getElementById('profileJoinDate').value = currentUser.joinDate || '2023-05-15';
+                
+                // 更新 GitHub 配置
+                if (currentUser.githubConfig) {
+                    document.getElementById('githubUsername').value = currentUser.githubConfig.username || '';
+                    document.getElementById('githubRepo').value = currentUser.githubConfig.repo || '';
+                    document.getElementById('githubToken').value = currentUser.githubConfig.token || '';
+                }
                 
                 // 更新统计数据
                 document.getElementById('blogsCount').textContent = currentUser.blogsCount || '0';
@@ -1710,19 +1964,33 @@
             e.preventDefault();
             if (currentUser) {
                 currentUser.email = document.getElementById('profileEmail').value;
+                
+                // 更新 GitHub 配置
+                currentUser.githubConfig = {
+                    username: document.getElementById('githubUsername').value,
+                    repo: document.getElementById('githubRepo').value,
+                    token: document.getElementById('githubToken').value
+                };
+                
                 // 更新存储的用户数据
                 if (usersData[currentUser.username]) {
                     usersData[currentUser.username].email = currentUser.email;
+                    usersData[currentUser.username].githubConfig = currentUser.githubConfig;
                     localStorage.setItem('usersData', JSON.stringify(usersData));
                 }
+                
                 // 更新记忆的用户数据
                 localStorage.setItem('rememberedUser', JSON.stringify(currentUser));
+                
+                // 更新 GitHub 网盘配置
+                gitHubDrive.setConfig(currentUser.githubConfig);
+                
                 alert('设置保存成功！');
             }
         }
 
         // 处理文件上传
-        function handleFileUpload(e) {
+        async function handleFileUpload(e) {
             e.preventDefault();
             
             const fileInput = document.getElementById('fileInput');
@@ -1735,47 +2003,24 @@
             
             const file = fileInput.files[0];
             
-            // 检查文件大小（10MB限制）
-            if (file.size > 10 * 1024 * 1024) {
-                alert('文件大小不能超过10MB！');
-                return;
+            try {
+                // 使用 GitHub API 上传文件
+                await gitHubDrive.uploadFile(file);
+                
+                alert('文件上传成功！');
+                loadStorageContent(); // 重新加载网盘内容
+                
+            } catch (error) {
+                console.error('上传失败:', error);
+                alert('文件上传失败: ' + error.message);
             }
-            
-            // 获取文件类型对应的图标
-            const fileType = getFileType(file.type);
-            const fileIcon = getFileIcon(fileType);
-            
-            // 创建文件项
-            const fileItem = {
-                title: file.name,
-                description: description || `文件 - ${fileType}`,
-                url: '#',
-                icon: fileIcon,
-                type: fileType,
-                size: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
-                date: new Date().toISOString().split('T')[0],
-                fileData: null // 在实际应用中，这里应该存储文件数据
-            };
-            
-            // 存储到用户网盘
-            if (!userStorage[currentUser.username]) {
-                userStorage[currentUser.username] = [];
-            }
-            
-            userStorage[currentUser.username].push(fileItem);
-            localStorage.setItem('userStorage', JSON.stringify(userStorage));
-            
-            // 重新加载网盘内容
-            loadStorageContent();
             
             document.getElementById('uploadFileModal').classList.remove('active');
             document.getElementById('uploadFileForm').reset();
-            
-            alert('文件上传成功！');
         }
 
         // 处理创建文件夹
-        function handleCreateFolder(e) {
+        async function handleCreateFolder(e) {
             e.preventDefault();
             
             const folderName = document.getElementById('folderName').value;
@@ -1785,32 +2030,20 @@
                 return;
             }
             
-            // 创建文件夹项
-            const folderItem = {
-                title: folderName,
-                description: '文件夹',
-                url: '#',
-                icon: 'fas fa-folder',
-                type: 'folder',
-                size: '0 MB',
-                date: new Date().toISOString().split('T')[0]
-            };
-            
-            // 存储到用户网盘
-            if (!userStorage[currentUser.username]) {
-                userStorage[currentUser.username] = [];
+            try {
+                // 使用 GitHub API 创建文件夹
+                await gitHubDrive.createFolder(folderName);
+                
+                alert('文件夹创建成功！');
+                loadStorageContent(); // 重新加载网盘内容
+                
+            } catch (error) {
+                console.error('创建文件夹失败:', error);
+                alert('文件夹创建失败: ' + error.message);
             }
-            
-            userStorage[currentUser.username].push(folderItem);
-            localStorage.setItem('userStorage', JSON.stringify(userStorage));
-            
-            // 重新加载网盘内容
-            loadStorageContent();
             
             document.getElementById('createFolderModal').classList.remove('active');
             document.getElementById('createFolderForm').reset();
-            
-            alert('文件夹创建成功！');
         }
 
         // 处理退出登录
@@ -1903,86 +2136,131 @@
         }
 
         // 加载网盘内容
-        function loadStorageContent() {
+        async function loadStorageContent() {
             const storageContainer = document.getElementById('storageContent');
             
             if (!currentUser) {
                 storageContainer.innerHTML = '<div class="storage-empty"><i class="fas fa-cloud"></i><p>请登录后使用网盘功能</p></div>';
                 return;
             }
-            
-            const userStorageData = userStorage[currentUser.username] || [];
-            
-            if (userStorageData.length === 0) {
-                storageContainer.innerHTML = '<div class="storage-empty"><i class="fas fa-cloud"></i><p>网盘为空，开始上传文件吧</p></div>';
-                updateStorageUsage();
-                return;
-            }
-            
-            storageContainer.innerHTML = '';
-            userStorageData.forEach((item, index) => {
-                const storageItem = document.createElement('div');
-                storageItem.className = 'storage-item';
-                storageItem.setAttribute('data-index', index);
-                
-                storageItem.innerHTML = `
-                    <div class="storage-icon file-type-${item.type}">
-                        <i class="${item.icon}"></i>
-                    </div>
-                    <div class="storage-content">
-                        <div class="storage-name">${item.title}</div>
-                        <div class="storage-meta">
-                            <span>${item.description}</span>
-                            <span>${item.size}</span>
-                            <span>${item.date}</span>
-                        </div>
-                    </div>
-                    <div class="storage-actions">
-                        <button class="btn btn-danger btn-sm delete-storage">
-                            <i class="fas fa-trash"></i>
+
+            // 检查 GitHub 配置
+            const githubConfig = currentUser.githubConfig;
+            if (!githubConfig || !githubConfig.username || !githubConfig.repo || !githubConfig.token) {
+                storageContainer.innerHTML = `
+                    <div class="storage-empty">
+                        <i class="fas fa-cog"></i>
+                        <p>请先配置 GitHub 仓库信息</p>
+                        <button class="btn btn-primary" onclick="showGithubConfig()" style="margin-top: 10px;">
+                            <i class="fas fa-cog"></i> 前往配置
                         </button>
                     </div>
                 `;
+                return;
+            }
+
+            // 设置 GitHub 配置
+            gitHubDrive.setConfig(githubConfig);
+
+            try {
+                storageContainer.innerHTML = '<div class="storage-empty"><i class="fas fa-spinner fa-spin"></i><p>加载中...</p></div>';
                 
-                // 添加点击事件
-                storageItem.addEventListener('click', (e) => {
-                    if (!e.target.closest('.storage-actions')) {
-                        if (item.type === 'folder') {
-                            alert(`打开文件夹: ${item.title}`);
-                            // 这里可以添加打开文件夹的逻辑
-                        } else {
-                            // 模拟文件下载
-                            alert(`下载文件: ${item.title}`);
+                const files = await gitHubDrive.getFiles();
+                
+                if (files.length === 0) {
+                    storageContainer.innerHTML = '<div class="storage-empty"><i class="fas fa-cloud"></i><p>网盘为空，开始上传文件吧</p></div>';
+                    return;
+                }
+
+                storageContainer.innerHTML = '';
+                
+                // 计算总大小
+                let totalSize = 0;
+                
+                files.forEach((file, index) => {
+                    const isFolder = file.type === 'dir';
+                    const fileSize = file.size ? (file.size / 1024 / 1024).toFixed(2) + ' MB' : '0 MB';
+                    if (file.size) totalSize += file.size;
+                    
+                    const fileIcon = isFolder ? 'fas fa-folder' : getFileIcon(file.name);
+                    const fileType = isFolder ? 'folder' : getFileType(file.name);
+
+                    const storageItem = document.createElement('div');
+                    storageItem.className = 'storage-item';
+                    storageItem.setAttribute('data-index', index);
+                    storageItem.setAttribute('data-sha', file.sha);
+                    storageItem.setAttribute('data-path', file.path);
+
+                    storageItem.innerHTML = `
+                        <div class="storage-icon file-type-${fileType}">
+                            <i class="${fileIcon}"></i>
+                        </div>
+                        <div class="storage-content">
+                            <div class="storage-name">${file.name}</div>
+                            <div class="storage-meta">
+                                <span>${isFolder ? '文件夹' : '文件'}</span>
+                                <span>${fileSize}</span>
+                                <span>${new Date(file.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                        <div class="storage-actions">
+                            <button class="btn btn-danger btn-sm delete-storage">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+
+                    // 添加点击事件
+                    storageItem.addEventListener('click', (e) => {
+                        if (!e.target.closest('.storage-actions')) {
+                            if (isFolder) {
+                                // 进入文件夹
+                                loadFolderContent(file.path);
+                            } else {
+                                // 下载文件
+                                const downloadUrl = gitHubDrive.getDownloadUrl(file.path);
+                                window.open(downloadUrl, '_blank');
+                            }
                         }
-                    }
+                    });
+
+                    storageContainer.appendChild(storageItem);
                 });
-                
-                storageContainer.appendChild(storageItem);
-            });
-            
-            updateStorageUsage();
+
+                updateStorageUsage(totalSize);
+
+            } catch (error) {
+                console.error('加载网盘内容失败:', error);
+                storageContainer.innerHTML = `
+                    <div class="storage-empty">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>加载失败: ${error.message}</p>
+                        <button class="btn btn-primary" onclick="loadStorageContent()" style="margin-top: 10px;">
+                            <i class="fas fa-redo"></i> 重试
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // 显示 GitHub 配置
+        function showGithubConfig() {
+            document.querySelectorAll('.profile-nav a').forEach(a => a.classList.remove('active'));
+            document.querySelector('[data-tab="settings"]').classList.add('active');
+            document.querySelectorAll('.profile-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('settingsTab').classList.add('active');
         }
 
         // 更新存储使用情况
-        function updateStorageUsage() {
-            if (!currentUser) return;
-            
-            const userStorageData = userStorage[currentUser.username] || [];
-            let totalSize = 0;
-            
-            // 计算已使用空间（这里简化处理，实际应该计算文件大小）
-            userStorageData.forEach(item => {
-                const sizeValue = parseFloat(item.size) || 0;
-                totalSize += sizeValue;
-            });
-            
-            const maxStorage = 100; // 100MB 总容量
-            const usagePercent = (totalSize / maxStorage) * 100;
-            
-            document.getElementById('storageUsed').textContent = totalSize.toFixed(1) + ' MB';
+        function updateStorageUsage(totalSizeBytes) {
+            const totalSizeMB = totalSizeBytes / 1024 / 1024;
+            const maxStorage = 100; // 100MB 免费限制
+            const usagePercent = Math.min((totalSizeMB / maxStorage) * 100, 100);
+
+            document.getElementById('storageUsed').textContent = totalSizeMB.toFixed(1) + ' MB';
             document.getElementById('storageTotal').textContent = maxStorage + ' MB';
             document.getElementById('storageProgressBar').style.width = usagePercent + '%';
-            
+
             // 根据使用率改变颜色
             if (usagePercent > 90) {
                 document.getElementById('storageProgressBar').style.backgroundColor = 'var(--danger-color)';
@@ -1994,16 +2272,25 @@
         }
 
         // 获取文件类型
-        function getFileType(mimeType) {
-            if (mimeType.startsWith('image/')) return 'image';
-            if (mimeType.startsWith('video/')) return 'video';
-            if (mimeType.startsWith('audio/')) return 'audio';
-            if (mimeType.includes('pdf') || mimeType.includes('document') || mimeType.includes('text')) return 'document';
+        function getFileType(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (!ext) return 'other';
+            
+            const imageExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+            const documentExt = ['pdf', 'doc', 'docx', 'txt', 'rtf'];
+            const audioExt = ['mp3', 'wav', 'ogg', 'm4a'];
+            const videoExt = ['mp4', 'avi', 'mov', 'wmv', 'flv'];
+            
+            if (imageExt.includes(ext)) return 'image';
+            if (documentExt.includes(ext)) return 'document';
+            if (audioExt.includes(ext)) return 'audio';
+            if (videoExt.includes(ext)) return 'video';
             return 'other';
         }
 
         // 获取文件图标
-        function getFileIcon(fileType) {
+        function getFileIcon(filename) {
+            const fileType = getFileType(filename);
             switch (fileType) {
                 case 'folder': return 'fas fa-folder';
                 case 'image': return 'fas fa-file-image';
