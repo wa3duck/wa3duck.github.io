@@ -1,4 +1,4 @@
-// 示例数据
+// 示例链接数据
 const sampleLinks = {
     tools: [
         { title: "GitHub", description: "全球最大的代码托管平台", url: "https://github.com", icon: "fab fa-github" },
@@ -14,7 +14,7 @@ const sampleLinks = {
     ],
     video: [
         { title: "YouTube", description: "全球最大的视频分享平台", url: "https://youtube.com", icon: "fab fa-youtube" },
-        { title: "Bilibili", description: "国内知名视频弹幕网站", url: "https://bilibili.com", icon: "fas fa-play-circle" },
+        { title: "Bilibili", description: "知名视频弹幕网站", url: "https://bilibili.com", icon: "fas fa-play-circle" },
         { title: "Netflix", description: "全球流媒体服务平台", url: "https://netflix.com", icon: "fas fa-film" },
         { title: "Vimeo", description: "高质量视频分享平台", url: "https://vimeo.com", icon: "fas fa-video" }
     ],
@@ -37,9 +37,15 @@ const sampleLinks = {
     ]
 };
 
-// 管理员账户
+// 管理员账号
 const adminAccount = {
     username: "waduck",
     password: "w1847236328",
     role: "admin"
 };
+
+// 本地数据
+let usersData = JSON.parse(localStorage.getItem('usersData')) || {};
+let userLinks = JSON.parse(localStorage.getItem('userLinks')) || {};
+let rememberedUser = JSON.parse(localStorage.getItem('rememberedUser'));
+let currentUser = null;
