@@ -1,105 +1,121 @@
-// 在 ui.js 中添加以下函数：
+// UI相关功能
 
-function renderUsers() {
-    const users = getUsers();
-    const userList = document.getElementById('userList');
-    const currentUser = getCurrentUser();
-
-    if (!userList) return;
-
-    userList.innerHTML = '';
-
-    users.forEach((user, index) => {
-        const userElement = document.createElement('li');
-        userElement.className = 'user-item';
-        userElement.innerHTML = `
-            <div class="user-info">
-                <span class="username">${user.username}</span>
-                <span class="user-email">${user.email}</span>
-                <span class="user-status">
-                    ${user.isAdmin ? '<span class="badge admin">管理员</span>' : ''}
-                    ${user.isBlocked ? '<span class="badge blocked">已封禁</span>' : '<span class="badge active">活跃</span>'}
-                </span>
-            </div>
-            <div class="user-actions">
-                ${currentUser && currentUser.isAdmin ? `
-                    <button class="btn btn-warning toggle-admin" onclick="toggleAdminStatus(${index})">
-                        ${user.isAdmin ? '取消管理员' : '设为管理员'}
-                    </button>
-                    <button class="btn btn-danger toggle-block" onclick="toggleBlockStatus(${index})">
-                        ${user.isBlocked ? '解封' : '封禁'}
-                    </button>
-                ` : ''}
-            </div>
-        `;
-        userList.appendChild(userElement);
-    });
-}
-
-function renderProfile() {
-    const currentUser = getCurrentUser();
-    if (!currentUser) return;
-
-    const profileContent = document.getElementById('profileContent');
-    if (!profileContent) return;
-
-    const userProfile = getUserProfile(currentUser.username);
-
-    profileContent.innerHTML = `
-        <div class="profile-info">
-            <h3><i class="fas fa-user"></i> 个人信息</h3>
-            <p><strong>用户名:</strong> ${currentUser.username}</p>
-            <p><strong>邮箱:</strong> ${userProfile.email}</p>
-            <p><strong>加入日期:</strong> ${userProfile.joinDate}</p>
-            <p><strong>添加链接数:</strong> ${userProfile.addedLinks ? userProfile.addedLinks.length : 0}</p>
-        </div>
-        <div class="profile-actions">
-            <button class="btn btn-primary" onclick="showChangePasswordForm()">
-                <i class="fas fa-key"></i> 修改密码
-            </button>
-        </div>
-    `;
-}
-
-function showChangePasswordForm() {
-    document.getElementById('changePasswordForm').style.display = 'block';
-}
-
-function hideChangePasswordForm() {
-    document.getElementById('changePasswordForm').style.display = 'none';
-}
-
-// 用户管理功能
-function toggleAdminStatus(userIndex) {
-    const users = getUsers();
-    const currentUser = getCurrentUser();
-
-    if (!currentUser || !currentUser.isAdmin) {
-        alert('没有权限执行此操作');
-        return;
+// 更新UI为已登录状态
+function updateUIForLoggedInUser() {
+    if (currentUser) {
+        document.getElementById('userBtn').innerHTML = `<i class="fas fa-user"></i> ${currentUser.username}`;
     }
-
-    users[userIndex].isAdmin = !users[userIndex].isAdmin;
-    saveUsers(users);
-    renderUsers();
 }
 
-function toggleBlockStatus(userIndex) {
-    const users = getUsers();
-    const currentUser = getCurrentUser();
-
-    if (!currentUser || !currentUser.isAdmin) {
-        alert('没有权限执行此操作');
-        return;
+// 显示用户模态框
+function showUserModal() {
+    if (currentUser) {
+        // 如果已登录，直接显示个人中心
+        showProfile();
+    } else {
+        document.getElementById('userModal').classList.add('active');
+        // 清空登录消息
+        document.getElementById('loginMessage').textContent = '';
     }
+}
 
-    users[userIndex].isBlocked = !users[userIndex].isBlocked;
-    saveUsers(users);
-
-    // 如果封禁的是当前用户，强制退出登录
-    if (users[userIndex].username === currentUser.username && users[userIndex].isBlocked) {
-        logout();
+// 显示个人中心
+function showProfile() {
+    document.getElementById('profileSection').classList.add('active');
+    
+    if (currentUser) {
+        // 更新用户信息
+        document.getElementById('profileUserName').textContent = currentUser.username;
+        document.getElementById('profileUserEmail').textContent = currentUser.email || '未设置邮箱';
+        document.getElementById('profileUserRole').textContent = currentUser.role === 'admin' ? '管理员' : '普通用户';
+        document.getElementById('profileUsername').value = currentUser.username;
+        document.getElementById('profileEmail').value = currentUser.email || '';
+        document.getElementById('profileJoinDate').value = currentUser.joinDate || '2023-05-15';
+        
+        // 更新统计数据
+        document.getElementById('blogsCount').textContent = currentUser.blogsCount || '0';
+        document.getElementById('linksCount').textContent = currentUser.linksCount || '0';
+        document.getElementById('joinDays').textContent = currentUser.joinDays || '245';
+        
+        // 更新用户按钮
+        document.getElementById('userBtn').innerHTML = `<i class="fas fa-user"></i> ${currentUser.username}`;
     }
+}
 
-    renderUsers();
+// 隐藏个人中心
+function hideProfile() {
+    document.getElementById('profileSection').classList.remove('active');
+}
+
+// 切换用户模式（登录/注册）
+function switchUserMode() {
+    const title = document.getElementById('userModalTitle');
+    const switchBtn = document.getElementById('switchMode');
+    const submitBtn = document.querySelector('#userForm button[type="submit"]');
+    const emailGroup = document.getElementById('emailGroup');
+    
+    // 清空登录消息
+    document.getElementById('loginMessage').textContent = '';
+    
+    if (title.textContent === '用户登录') {
+        title.textContent = '用户注册';
+        switchBtn.textContent = '切换到登录';
+        submitBtn.textContent = '注册';
+        emailGroup.style.display = 'block';
+    } else {
+        title.textContent = '用户登录';
+        switchBtn.textContent = '切换到注册';
+        submitBtn.textContent = '登录';
+        emailGroup.style.display = 'none';
+    }
+}
+
+// 主题切换
+function toggleTheme() {
+    document.body.classList.toggle('dark-theme');
+    const icon = document.querySelector('#themeToggle i');
+    if (document.body.classList.contains('dark-theme')) {
+        icon.className = 'fas fa-sun';
+        saveToStorage('theme', 'dark');
+    } else {
+        icon.className = 'fas fa-moon';
+        saveToStorage('theme', 'light');
+    }
+}
+
+// 加载链接数据
+function loadLinks() {
+    for (const category in sampleLinks) {
+        const linksContainer = document.getElementById(`${category}-links`);
+        if (linksContainer) {
+            // 如果有用户登录且该用户有自定义链接，则使用用户自定义链接
+            const userCategoryLinks = currentUser && userLinks[currentUser.username] ? 
+                userLinks[currentUser.username][category] : null;
+            
+            const linksToShow = userCategoryLinks || sampleLinks[category];
+            
+            linksContainer.innerHTML = '';
+            
+            // 加载链接
+            linksToShow.forEach((link, index) => {
+                const linkItem = document.createElement('li');
+                linkItem.className = 'link-item';
+                linkItem.setAttribute('data-category', category);
+                linkItem.setAttribute('data-index', index);
+                linkItem.innerHTML = `
+                    <div class="link-icon">
+                        <i class="${link.icon}"></i>
+                    </div>
+                    <div class="link-content">
+                        <div class="link-title">${link.title}</div>
+                        <div class="link-description">${link.description}</div>
+                    </div>
+                `;
+                linkItem.addEventListener('click', (e) => {
+                    window.open(link.url, '_blank');
+                });
+                linksContainer.appendChild(linkItem);
+            });
+        }
+    }
 }
